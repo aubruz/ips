@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">IPS</string>
+    <string name="home_text">Choisissez une action</string>
+    <string name="stop">STOP</string>
+    <string name="start">START</string>
+    <string name="default_room">422</string>
+    <string name="default_point_name">9</string>
+    <string name="room_label">Salle</string>
+    <string name="point_name_label">Nom du point</string>
+    <string name="btn_label_find_location">Trouver ma position</string>
+    <string name="btn_label_save_fingerprints">Créer des fingerprints</string>
+    <string name="building_spinner_label">Batiment</string>
+    <string name="floor_spinner_label">Étage</string>
+    <string name="default_floor_id">2059237562</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="wifi">WiFi</string>
+</resources>
