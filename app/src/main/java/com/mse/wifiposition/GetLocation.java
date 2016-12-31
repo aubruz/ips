@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +33,8 @@ public class GetLocation extends AppCompatActivity {
     private TextView mRoomValue = null;
     private TextView mPointNameValue = null;
     private boolean mFindingLocation = false;
+    private Switch mSwitchBluetooh = null;
+    private Switch mSwitchWifi = null;
     private final Handler handler = new Handler();
     WifiManager mWifiManager;
     WifiReceiver mReceiverWifi;
@@ -45,6 +48,8 @@ public class GetLocation extends AppCompatActivity {
         mPointName = (TextView) findViewById(R.id.point_name_value);
         mRoomValue = (TextView) findViewById(R.id.room_value);
         mPointNameValue = (TextView) findViewById(R.id.point_name_value);
+        mSwitchBluetooh = (Switch) findViewById(R.id.switchBlutetooth);
+        mSwitchWifi = (Switch) findViewById(R.id.switchWifi);
         mScanResults = (TextView) findViewById(R.id.text_scan_results);
         mStartStopButton = (Button) findViewById(R.id.btn_start_stop_find_location);
         mStartStopButton.setOnClickListener(v -> startStopFindLocation());
@@ -74,8 +79,10 @@ public class GetLocation extends AppCompatActivity {
     private void startStopFindLocation(){
         mFindingLocation = !mFindingLocation;
         if(mFindingLocation) {
-            doInback();
-            Toast.makeText(GetLocation.this, "Recherche de la localisation via WiFi en cours" , Toast.LENGTH_SHORT).show();
+            if(mSwitchWifi.isChecked()) {
+                doInback();
+            }
+            Toast.makeText(GetLocation.this, "Recherche de la localisation en cours" , Toast.LENGTH_SHORT).show();
             mStartStopButton.setText(R.string.stop);
         }else{
             Toast.makeText(GetLocation.this, "Arrêt de la recherche" , Toast.LENGTH_SHORT).show();
