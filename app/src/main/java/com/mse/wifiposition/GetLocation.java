@@ -177,7 +177,12 @@ public class GetLocation extends AppCompatActivity {
                          @Override
                          public void onResponse(JSONObject response) {
                              //mTextTest.setText(response.toString());
-                             Toast.makeText(GetLocation.this, response.toString(), Toast.LENGTH_SHORT).show();
+                             try {
+                                 mRoomValue.setText(response.getString("room"));
+                                 mPointNameValue.setText(response.getString("point_name"));
+                             }catch(JSONException e){
+                                 e.printStackTrace();
+                             }
                          }
                          @Override
                          public void onError(ANError error) {
