@@ -187,7 +187,8 @@ public class SaveFingerprints extends AppCompatActivity {
                 SensorManager.getRotationMatrix(R, I, gravity, magnetic);
                 float [] A_D = event.values.clone();
                 float [] A_W = new float[3];
-                A_W[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2]; //Should be 0 or close
+                // We don't need to calculate A_W[0] because the value should be 0 or close
+                //A_W[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
                 A_W[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
                 A_W[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
 
@@ -263,7 +264,7 @@ public class SaveFingerprints extends AppCompatActivity {
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-
+        // Refresh buildings list
         getBuildings();
         return super.onOptionsItemSelected(item);
     }
