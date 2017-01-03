@@ -4,10 +4,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -47,24 +54,21 @@ public class SaveFingerprints extends AppCompatActivity {
     private boolean mReccording = false;
     private Switch mSwitchBluetooh = null;
     private Switch mSwitchWifi = null;
+    private Switch mSwitchMagneticField = null;
     private Spinner mSpinnerFloors = null;
     private Spinner mSpinnerBuildings = null;
     private ArrayList<SpinnerItem> mFloorsList = null;
     private ArrayList<SpinnerItem> mBuildingsList = null;
     private ArrayAdapter<SpinnerItem> mFloorsAdapter = null;
     private ArrayAdapter<SpinnerItem> mBuildingsAdapter = null;
+    private float gravity[] = new float[3];
+    private float magnetic[] = new float[3];
+    private SensorManager mSensorManager = null;
+    private Sensor mMagneticField = null;
+    private Sensor mAccelerometer = null;
     private BeaconManager mBeaconManager;
     private Region mRegion;
     private final Handler mHandler = new Handler();
-    /*private final int PERMISSIONS_REQUEST_WIFI = 0x1234;
-    private String[] mPermissions = new String[]{
-            android.Manifest.permission.ACCESS_WIFI_STATE,
-            android.Manifest.permission.CHANGE_WIFI_STATE,
-            android.Manifest.permission.ACCESS_NETWORK_STATE,
-            android.Manifest.permission.INTERNET,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-    };*/
 
 
     @Override
@@ -79,9 +83,13 @@ public class SaveFingerprints extends AppCompatActivity {
         mPointName = (EditText) findViewById(R.id.point_name);
         mSwitchBluetooh = (Switch) findViewById(R.id.switchBlutetooth);
         mSwitchWifi = (Switch) findViewById(R.id.switchWifi);
+        mSwitchMagneticField = (Switch) findViewById(R.id.switchMagneticField);
         mSpinnerFloors = (Spinner) findViewById(R.id.spinnerFloors);
         mSpinnerBuildings = (Spinner) findViewById(R.id.spinnerBuildings);
         mButton.setOnClickListener(v -> changeRecordingState());
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 
         // Spinners
         mBuildingsList = new ArrayList<>();
@@ -112,12 +120,6 @@ public class SaveFingerprints extends AppCompatActivity {
         mBeaconManager.setBackgroundScanPeriod(5000,5000);
         mBeaconManager.setRangingListener((Region region, List<Beacon> list) -> saveBluetoothFingerprints(list));
         mRegion = new Region("Ranged region", UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"), null, null);
-
-        /*if(checkSelfPermission(android.Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(android.Manifest.permission.CHANGE_WIFI_STATE) != PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions(mPermissions, PERMISSIONS_REQUEST_WIFI);
-        }*/
     }
 
     AdapterView.OnItemSelectedListener OnSelectionListener =  new AdapterView.OnItemSelectedListener() {
@@ -137,18 +139,16 @@ public class SaveFingerprints extends AppCompatActivity {
             //
         }
     };
-    /*public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST_WIFI  && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            doInback();
-        }
-    }*/
 
     @Override
     protected void onPause() {
         unregisterReceiver(mReceiverWifi);
         if(mReccording && mSwitchBluetooh.isChecked()) {
             mBeaconManager.stopRanging(mRegion);
+        }
+        if(mReccording && mSwitchMagneticField.isChecked()) {
+            mSensorManager.unregisterListener(mSensorEventListener, mMagneticField);
+            mSensorManager.unregisterListener(mSensorEventListener, mAccelerometer);
         }
         super.onPause();
     }
@@ -160,9 +160,47 @@ public class SaveFingerprints extends AppCompatActivity {
         if(mReccording && mSwitchBluetooh.isChecked()) {
             mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
         }
-
+        if(mReccording && mSwitchMagneticField.isChecked()) {
+            mSensorManager.registerListener(mSensorEventListener, mMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
+            mSensorManager.registerListener(mSensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
         super.onResume();
     }
+
+    final SensorEventListener mSensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            Sensor sensor = event.sensor;
+            if (sensor.getType() == Sensor.TYPE_GRAVITY) {
+                gravity[0] = event.values[0];
+                gravity[1] = event.values[1];
+                gravity[2] = event.values[2];
+                //Log.d("Field","\nXX :"+gravity[0]+"\nYY :"+gravity[1]+"\nZZ :"+gravity[2]);
+            } else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+
+                magnetic[0] = event.values[0];
+                magnetic[1] = event.values[1];
+                magnetic[2] = event.values[2];
+
+                float[] R = new float[9];
+                float[] I = new float[9];
+                SensorManager.getRotationMatrix(R, I, gravity, magnetic);
+                float [] A_D = event.values.clone();
+                float [] A_W = new float[3];
+                A_W[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2]; //Should be 0 or close
+                A_W[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
+                A_W[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
+
+                //Log.d("Field","\nX :"+A_W[0]+"\nY :"+A_W[1]+"\nZ :"+A_W[2]);
+
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
 
     private void changeRecordingState()
     {
@@ -174,15 +212,27 @@ public class SaveFingerprints extends AppCompatActivity {
             if(mSwitchBluetooh.isChecked()) {
                 mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
             }
+            if(mSwitchMagneticField.isChecked()){
+                mSensorManager.registerListener(mSensorEventListener, mMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
+                mSensorManager.registerListener(mSensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            }
             Toast.makeText(SaveFingerprints.this, "Enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
             mButton.setText(R.string.stop);
+            // Disable switches
             mSwitchBluetooh.setEnabled(false);
             mSwitchWifi.setEnabled(false);
+            mSwitchMagneticField.setEnabled(false);
         }else{
+            // Enable switches
             mSwitchBluetooh.setEnabled(true);
             mSwitchWifi.setEnabled(true);
+            mSwitchMagneticField.setEnabled(true);
             if(mSwitchBluetooh.isChecked()) {
                 mBeaconManager.stopRanging(mRegion);
+            }
+            if(mSwitchMagneticField.isChecked()) {
+                mSensorManager.unregisterListener(mSensorEventListener, mMagneticField);
+                mSensorManager.unregisterListener(mSensorEventListener, mAccelerometer);
             }
             Toast.makeText(SaveFingerprints.this, "Arrêt de l'enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
             mButton.setText(R.string.start);
@@ -207,16 +257,16 @@ public class SaveFingerprints extends AppCompatActivity {
         mWifiManager.startScan();
     }
 
-    /*public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, 0, 0, "Refresh");
         return super.onCreateOptionsMenu(menu);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        mWifiManager.startScan();
-        text.setText("Starting Scan");
+
+        getBuildings();
         return super.onOptionsItemSelected(item);
-    }*/
+    }
 
     private void getBuildings(){
         AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings")

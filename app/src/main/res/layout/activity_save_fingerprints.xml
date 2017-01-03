@@ -103,13 +103,23 @@
         android:id="@+id/switchWifi"
         android:checked="true" />
 
+    <Switch
+        android:text="@string/magnetic_field"
+        android:theme="@style/SCBSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/switchWifi"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="16dp"
+        android:id="@+id/switchMagneticField" />
+
     <Button
         android:text="@string/start"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/button"
         android:layout_marginTop="27dp"
-        android:layout_below="@+id/switchWifi"
+        android:layout_below="@+id/switchMagneticField"
         android:layout_alignParentStart="true" />
 
     <TextView

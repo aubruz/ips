@@ -14,4 +14,5 @@
     <string name="default_floor_id">2059237562</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="wifi">WiFi</string>
+    <string name="magnetic_field">Champ magnétique</string>
 </resources>
