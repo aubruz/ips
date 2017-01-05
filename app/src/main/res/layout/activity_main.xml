@@ -18,7 +18,8 @@
         android:layout_weight="50"
         android:orientation="horizontal" >
 
-        <com.mse.wifiposition.MapView
+        <com.mse.wifiposition.ImageMap
+            android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

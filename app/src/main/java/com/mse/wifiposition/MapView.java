@@ -40,12 +40,12 @@ public class MapView extends SurfaceView implements SurfaceHolder.Callback, View
 
     public MapView (Context context) {
         super(context);
-        init();
+        //init();
     }
 
     public MapView (Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        //init();
     }
 
     private void init(){
@@ -62,7 +62,7 @@ public class MapView extends SurfaceView implements SurfaceHolder.Callback, View
         this.setOnTouchListener(this);
 
         mGetImageTask = new GetImageTask();
-        mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/2059237562");
+        mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/43284381");//https://ukonect-dev.s3.amazonaws.com/blueprints/2059237562");
         if(mGetImageTask != null){
             mGetImageTask.link(this);
         }
@@ -187,7 +187,9 @@ public class MapView extends SurfaceView implements SurfaceHolder.Callback, View
     }
 
     private void imageCallback(Bitmap image){
-        mCanvas.drawBitmap(image, 0, 0, null);
+        if(image != null && mCanvas != null) {
+            mCanvas.drawBitmap(image, 0, 0, null);
+        }
         //mCanvas = new Canvas(mBitmap);
     }
 
