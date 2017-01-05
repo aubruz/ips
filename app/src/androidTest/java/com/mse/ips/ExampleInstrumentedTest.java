@@ -1,4 +1,4 @@
-package com.mse.wifiposition;
+package com.mse.ips;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

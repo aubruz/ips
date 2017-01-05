@@ -8,7 +8,7 @@ import com.mse.ips.lib.PolyArea;
 import com.mse.ips.lib.RectArea;
 import com.mse.ips.lib.TouchPoint;
 import com.mse.ips.listener.OnMapViewClickListener;
-import com.mse.wifiposition.R;
+import com.mse.ips.R;
 
 import android.content.Context;
 import android.graphics.Bitmap;

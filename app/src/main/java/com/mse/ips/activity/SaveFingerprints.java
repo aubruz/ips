@@ -12,6 +12,7 @@ import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,8 +34,11 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
-import com.mse.wifiposition.R;
+import com.mse.ips.R;
+import com.mse.ips.lib.GetBitmapFromUrlTask;
 import com.mse.ips.lib.SpinnerItem;
+import com.mse.ips.listener.OnMapViewClickListener;
+import com.mse.ips.view.MapView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,7 +49,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class SaveFingerprints extends AppCompatActivity {
-
+    private MapView mImageView = null;
+    private GetBitmapFromUrlTask mGetImageTask = null;
     private TextView mText = null;
     WifiManager mWifiManager;
     WifiReceiver mReceiverWifi;
@@ -121,6 +126,34 @@ public class SaveFingerprints extends AppCompatActivity {
         mBeaconManager.setBackgroundScanPeriod(5000,5000);
         mBeaconManager.setRangingListener((Region region, List<Beacon> list) -> saveBluetoothFingerprints(list));
         mRegion = new Region("Ranged region", UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"), null, null);
+
+        // MapView
+        mImageView = (MapView) findViewById(R.id.imageView);
+        mGetImageTask = new GetBitmapFromUrlTask();
+        mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/43284381");
+        mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
+        mImageView.addPoint(150, 150, 50);
+        mImageView.addOnMapViewClickedListener(new OnMapViewClickListener()
+        {
+            @Override
+            public void onImageMapClicked(int id, MapView imageMap)
+            {
+                // when the area is tapped, show the name in a
+            }
+
+            @Override
+            public void onBubbleClicked(int id)
+            {
+                // react to info bubble for area being tapped
+            }
+
+            @Override
+            public void onScreenTapped(float x, float y)
+            {
+                mImageView.addPoint(x, y, 50);
+                Log.d("Screen", " Taped on X: " + x + " Y: " + y);
+            }
+        });
     }
 
     AdapterView.OnItemSelectedListener OnSelectionListener =  new AdapterView.OnItemSelectedListener() {

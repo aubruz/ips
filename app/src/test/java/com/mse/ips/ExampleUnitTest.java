@@ -1,4 +1,4 @@
-package com.mse.wifiposition;
+package com.mse.ips;
 
 import org.junit.Test;
 

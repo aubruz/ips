@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mse.wifiposition">
+    package="com.mse.ips">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -17,14 +17,14 @@
         android:supportsRtl="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme">
-        <activity android:name="com.mse.ips.activity.MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.mse.ips.activity.SaveFingerprints" />
-        <activity android:name="com.mse.ips.activity.GetLocation"></activity>
+        <activity android:name=".activity.SaveFingerprints" />
+        <activity android:name=".activity.GetLocation"></activity>
     </application>
 
 </manifest>
