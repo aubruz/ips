@@ -1,4 +1,4 @@
-package com.mse.wifiposition.listener;
+package com.mse.ips.listener;
 
 import android.graphics.Bitmap;
 

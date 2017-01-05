@@ -1,4 +1,4 @@
-package com.mse.wifiposition.lib;
+package com.mse.ips.lib;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

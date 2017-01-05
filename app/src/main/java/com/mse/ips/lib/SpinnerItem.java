@@ -1,4 +1,4 @@
-package com.mse.wifiposition.lib;
+package com.mse.ips.lib;
 
 public class SpinnerItem {
     private String name;

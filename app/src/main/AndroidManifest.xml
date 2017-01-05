@@ -17,14 +17,14 @@
         android:supportsRtl="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.MainActivity">
+        <activity android:name="com.mse.ips.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.SaveFingerprints" />
-        <activity android:name=".activity.GetLocation"></activity>
+        <activity android:name="com.mse.ips.activity.SaveFingerprints" />
+        <activity android:name="com.mse.ips.activity.GetLocation"></activity>
     </application>
 
 </manifest>

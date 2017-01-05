@@ -1,25 +1,16 @@
-package com.mse.wifiposition.activity;
+package com.mse.ips.activity;
 
 import com.mse.wifiposition.R;
-import com.mse.wifiposition.lib.GetBitmapFromUrlTask;
-import com.mse.wifiposition.listener.OnBitmapRetrievedListener;
-import com.mse.wifiposition.listener.OnMapViewClickListener;
-import com.mse.wifiposition.view.MapView;
+import com.mse.ips.lib.GetBitmapFromUrlTask;
+import com.mse.ips.listener.OnMapViewClickListener;
+import com.mse.ips.view.MapView;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 
 public class MainActivity extends AppCompatActivity {

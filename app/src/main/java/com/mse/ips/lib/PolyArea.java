@@ -1,4 +1,4 @@
-package com.mse.wifiposition.lib;
+package com.mse.ips.lib;
 
 import java.util.ArrayList;
 

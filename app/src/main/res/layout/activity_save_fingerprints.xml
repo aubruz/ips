@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_get_fingerprints"
     android:layout_width="match_parent"
@@ -8,126 +8,127 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.mse.wifiposition.activity.SaveFingerprints">
+    android:orientation="vertical"
+    tools:context="com.mse.ips.activity.SaveFingerprints">
 
-    <TextView
-        android:text="@string/room_label"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/room_label"
-        android:labelFor="@+id/room"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_height="match_parent"
+        android:layout_weight="50"
+        android:orientation="horizontal" >
 
-    <EditText
+        <com.mse.ips.view.MapView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:ems="10"
-        android:id="@+id/room"
-        android:layout_below="@+id/room_label"
-        android:layout_alignParentStart="true"
-        android:text="@string/default_room" />
+        android:layout_height="match_parent"
+        android:layout_weight="50" >
 
-    <TextView
-        android:text="@string/point_name_label"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/point_name_label"
-        android:labelFor="@+id/point_name"
-        android:layout_below="@+id/room"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="16dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:ems="10"
-        android:id="@+id/point_name"
-        android:layout_below="@+id/point_name_label"
-        android:layout_alignParentStart="true"
-        android:text="@string/default_point_name"/>
+        <TextView
+            android:text="@string/room_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/room_label"
+            android:labelFor="@+id/room"  />
 
-    <TextView
-        android:text="@string/building_spinner_label"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/building_spinner_label"
-        android:labelFor="@+id/spinnerBuildings"
-        android:layout_below="@+id/point_name"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="16dp" />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:ems="10"
+            android:id="@+id/room"
+            android:text="@string/default_room" />
 
-    <Spinner
-        android:id="@+id/spinnerBuildings"
-        android:layout_width="match_parent"
-        android:layout_below="@+id/building_spinner_label"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:text="@string/point_name_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/point_name_label"
+            android:labelFor="@+id/point_name"
+            android:layout_marginTop="16dp" />
 
-    <TextView
-        android:text="@string/floor_spinner_label"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/floor_spinner_label"
-        android:labelFor="@+id/spinnerFloors"
-        android:layout_below="@+id/spinnerBuildings"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="16dp" />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:ems="10"
+            android:id="@+id/point_name"
+            android:text="@string/default_point_name"/>
 
-    <Spinner
-        android:id="@+id/spinnerFloors"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/floor_spinner_label"
-        android:layout_alignParentStart="true" />
+        <TextView
+            android:text="@string/building_spinner_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/building_spinner_label"
+            android:labelFor="@+id/spinnerBuildings"
+            android:layout_marginTop="16dp" />
 
-    <Switch
-        android:text="@string/bluetooth"
-        android:theme="@style/SCBSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/spinnerFloors"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="18dp"
-        android:id="@+id/switchBlutetooth" />
+        <Spinner
+            android:id="@+id/spinnerBuildings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <Switch
-        android:text="@string/wifi"
-        android:theme="@style/SCBSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/switchBlutetooth"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="16dp"
-        android:id="@+id/switchWifi"
-        android:checked="true" />
+        <TextView
+            android:text="@string/floor_spinner_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/floor_spinner_label"
+            android:labelFor="@+id/spinnerFloors"
+            android:layout_marginTop="16dp" />
 
-    <Switch
-        android:text="@string/magnetic_field"
-        android:theme="@style/SCBSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/switchWifi"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="16dp"
-        android:id="@+id/switchMagneticField" />
+        <Spinner
+            android:id="@+id/spinnerFloors"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <Button
-        android:text="@string/start"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button"
-        android:layout_marginTop="27dp"
-        android:layout_below="@+id/switchMagneticField"
-        android:layout_alignParentStart="true" />
+        <Switch
+            android:text="@string/bluetooth"
+            android:theme="@style/SCBSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:id="@+id/switchBlutetooth" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/button"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="34dp"
-        android:id="@+id/text" />
+        <Switch
+            android:text="@string/wifi"
+            android:theme="@style/SCBSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:id="@+id/switchWifi"
+            android:checked="true" />
 
-</RelativeLayout>
+        <Switch
+            android:text="@string/magnetic_field"
+            android:theme="@style/SCBSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:id="@+id/switchMagneticField" />
+
+        <Button
+            android:text="@string/start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button"
+            android:layout_marginTop="27dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="34dp"
+            android:id="@+id/text" />
+        </LinearLayout>
+
+    </ScrollView>
+</LinearLayout>

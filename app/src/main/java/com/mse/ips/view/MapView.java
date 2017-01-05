@@ -1,8 +1,14 @@
-package com.mse.wifiposition.view;
+package com.mse.ips.view;
 
+import com.mse.ips.lib.Area;
+import com.mse.ips.lib.Bubble;
+import com.mse.ips.lib.CircleArea;
+import com.mse.ips.lib.Point;
+import com.mse.ips.lib.PolyArea;
+import com.mse.ips.lib.RectArea;
+import com.mse.ips.lib.TouchPoint;
+import com.mse.ips.listener.OnMapViewClickListener;
 import com.mse.wifiposition.R;
-import com.mse.wifiposition.lib.*;
-import com.mse.wifiposition.listener.OnMapViewClickListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;

@@ -1,10 +1,10 @@
-package com.mse.wifiposition.lib;
+package com.mse.ips.lib;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
-import com.mse.wifiposition.listener.OnBitmapRetrievedListener;
+import com.mse.ips.listener.OnBitmapRetrievedListener;
 
 import java.io.IOException;
 import java.io.InputStream;

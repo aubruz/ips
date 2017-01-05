@@ -1,6 +1,6 @@
-package com.mse.wifiposition.listener;
+package com.mse.ips.listener;
 
-import com.mse.wifiposition.view.MapView;
+import com.mse.ips.view.MapView;
 
 /**
  * Map tapped callback interface

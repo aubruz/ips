@@ -1,4 +1,4 @@
-package com.mse.wifiposition.lib;
+package com.mse.ips.lib;
 
 /*
  * A class to track touches

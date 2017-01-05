@@ -1,4 +1,4 @@
-package com.mse.wifiposition.lib;
+package com.mse.ips.lib;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -7,7 +7,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.SparseArray;
 
-import com.mse.wifiposition.listener.OnMapViewClickListener;
+import com.mse.ips.listener.OnMapViewClickListener;
 
 import java.util.ArrayList;
 

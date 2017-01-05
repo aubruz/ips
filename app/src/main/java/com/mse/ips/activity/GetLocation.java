@@ -1,4 +1,4 @@
-package com.mse.wifiposition.activity;
+package com.mse.ips.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
