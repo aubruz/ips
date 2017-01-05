@@ -34,7 +34,7 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
 import com.mse.wifiposition.R;
-import com.mse.wifiposition.view.widget.SpinnerItem;
+import com.mse.wifiposition.lib.SpinnerItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
