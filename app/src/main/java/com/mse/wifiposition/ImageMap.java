@@ -1,5 +1,6 @@
 package com.mse.wifiposition;
 
+import com.mse.wifiposition.lib.*;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
@@ -326,7 +327,7 @@ public class ImageMap extends ImageView
     {
         if (mBubbleMap.get(areaId) == null)
         {
-            Bubble b = new Bubble(text,areaId);
+            Bubble b = new Bubble(text,areaId, mResizeFactorX, mResizeFactorY, textPaint, mViewWidth, mExpandWidth, mIdToArea);
             mBubbleMap.put(areaId,b);
         }
     }
@@ -754,7 +755,7 @@ public class ImageMap extends ImageView
             Bubble b = mBubbleMap.get(key);
             if (b != null)
             {
-                b.onDraw(canvas);
+                b.onDraw(canvas, mScrollLeft, mScrollTop, bubbleShadowPaint, bubblePaint, textPaint);
             }
         }
         Path path = new Path();
@@ -770,7 +771,7 @@ public class ImageMap extends ImageView
     {
         for (Area a : mAreaList)
         {
-            a.onDraw(canvas);
+            a.onDraw(canvas, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
         }
     }
 
@@ -1164,7 +1165,7 @@ public class ImageMap extends ImageView
             {
                 if (b.isInArea((float)x-mScrollLeft,(float)y-mScrollTop))
                 {
-                    b.onTapped();
+                    b.onTapped(mCallbackList);
                     bubble=true;
                     missed=false;
                     // only fire tapped for one bubble
@@ -1262,36 +1263,6 @@ public class ImageMap extends ImageView
         invalidate();
     }
 
-    /*
-     * A class to track touches
-     */
-    class TouchPoint {
-        int _id;
-        float _x;
-        float _y;
-
-        TouchPoint(int id) {
-            _id=id;
-            _x=0f;
-            _y=0f;
-        }
-        int getTrackingPointer() {
-            return _id;
-        }
-        void setPosition(float x, float y) {
-            if ((_x != x) || (_y != y)) {
-                _x=x;
-                _y=y;
-            }
-        }
-        float getX() {
-            return _x;
-        }
-        float getY() {
-            return _y;
-        }
-    }
-
 
     /*
      * on clicked handler add/remove support
@@ -1311,427 +1282,6 @@ public class ImageMap extends ImageView
                 mCallbackList.remove(h);
             }
         }
-    }
-
-        /*
-         * Begin map area support
-         */
-    /**
-     *  Area is abstract Base for tappable map areas
-     *   descendants provide hit test and focal point
-     */
-    abstract class Area {
-        int _id;
-        String _name;
-        HashMap<String,String> _values;
-        Bitmap _decoration=null;
-
-        public Area(int id, String name) {
-            _id = id;
-            if (name != null) {
-                _name = name;
-            }
-        }
-
-        public int getId() {
-            return _id;
-        }
-
-        public String getName() {
-            return _name;
-        }
-
-        // all xml values for the area are passed to the object
-        // the default impl just puts them into a hashmap for
-        // retrieval later
-        public void addValue(String key, String value) {
-            if (_values == null) {
-                _values = new HashMap<String,String>();
-            }
-            _values.put(key, value);
-        }
-
-        public String getValue(String key) {
-            String value=null;
-            if (_values!=null) {
-                value=_values.get(key);
-            }
-            return value;
-        }
-
-        // a method for setting a simple decorator for the area
-        public void setBitmap(Bitmap b) {
-            _decoration = b;
-        }
-
-        // an onDraw is set up to provide an extensible way to
-        // decorate an area.  When drawing remember to take the
-        // scaling and translation into account
-        public void onDraw(Canvas canvas)
-        {
-            if (_decoration != null)
-            {
-                float x = (getOriginX() * mResizeFactorX) + mScrollLeft - 17;
-                float y = (getOriginY() * mResizeFactorY) + mScrollTop - 17;
-                canvas.drawBitmap(_decoration, x, y, null);
-            }
-        }
-
-        abstract boolean isInArea(float x, float y);
-        abstract float getOriginX();
-        abstract float getOriginY();
-    }
-
-    /**
-     * Rectangle Area
-     */
-    class RectArea extends Area {
-        float _left;
-        float _top;
-        float _right;
-        float _bottom;
-
-
-        RectArea(int id, String name, float left, float top, float right, float bottom) {
-            super(id,name);
-            _left = left;
-            _top = top;
-            _right = right;
-            _bottom = bottom;
-        }
-
-        public boolean isInArea(float x, float y) {
-            boolean ret = false;
-            if ((x > _left) && (x < _right)) {
-                if ((y > _top) && (y < _bottom)) {
-                    ret = true;
-                }
-            }
-            return ret;
-        }
-
-        public float getOriginX() {
-            return _left;
-        }
-
-        public float getOriginY() {
-            return _top;
-        }
-    }
-
-    /**
-     * Polygon area
-     */
-    class PolyArea extends Area {
-        ArrayList<Integer> xpoints = new ArrayList<Integer>();
-        ArrayList<Integer> ypoints = new ArrayList<Integer>();
-
-        // centroid point for this poly
-        float _x;
-        float _y;
-
-        // number of points (don't rely on array size)
-        int _points;
-
-        // bounding box
-        int top=-1;
-        int bottom=-1;
-        int left=-1;
-        int right=-1;
-
-        public PolyArea(int id, String name, String coords) {
-            super(id,name);
-
-            // split the list of coordinates into points of the
-            // polygon and compute a bounding box
-            String[] v = coords.split(",");
-
-            int i=0;
-            while ((i+1)<v.length) {
-                int x = Integer.parseInt(v[i]);
-                int y = Integer.parseInt(v[i+1]);
-                xpoints.add(x);
-                ypoints.add(y);
-                top=(top==-1)?y:Math.min(top,y);
-                bottom=(bottom==-1)?y:Math.max(bottom,y);
-                left=(left==-1)?x:Math.min(left,x);
-                right=(right==-1)?x:Math.max(right,x);
-                i+=2;
-            }
-            _points=xpoints.size();
-
-            // add point zero to the end to make
-            // computing area and centroid easier
-            xpoints.add(xpoints.get(0));
-            ypoints.add(ypoints.get(0));
-
-            computeCentroid();
-        }
-
-        /**
-         * area() and computeCentroid() are adapted from the implementation
-         * of polygon.java  published from a princeton case study
-         * The study is here: http://introcs.cs.princeton.edu/java/35purple/
-         * The polygon.java source is here: http://introcs.cs.princeton.edu/java/35purple/Polygon.java.html
-         */
-
-        // return area of polygon
-        public double area() {
-            double sum = 0.0;
-            for (int i = 0; i < _points; i++) {
-                sum = sum + (xpoints.get(i) * ypoints.get(i+1)) - (ypoints.get(i) * xpoints.get(i+1));
-            }
-            sum = 0.5 * sum;
-            return Math.abs(sum);
-        }
-
-        // compute the centroid of the polygon
-        public void computeCentroid() {
-            double cx = 0.0, cy = 0.0;
-            for (int i = 0; i < _points; i++) {
-                cx = cx + (xpoints.get(i) + xpoints.get(i+1)) * (ypoints.get(i) * xpoints.get(i+1) - xpoints.get(i) * ypoints.get(i+1));
-                cy = cy + (ypoints.get(i) + ypoints.get(i+1)) * (ypoints.get(i) * xpoints.get(i+1) - xpoints.get(i) * ypoints.get(i+1));
-            }
-            cx /= (6 * area());
-            cy /= (6 * area());
-            _x=Math.abs((int)cx);
-            _y=Math.abs((int)cy);
-        }
-
-
-        @Override
-        public float getOriginX() {
-            return _x;
-        }
-
-        @Override
-        public float getOriginY() {
-            return _y;
-        }
-
-        /**
-         * This is a java port of the
-         * W. Randolph Franklin algorithm explained here
-         * http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-         */
-        @Override
-        public boolean isInArea(float testx, float testy)
-        {
-            int i, j;
-            boolean c = false;
-            for (i = 0, j = _points-1; i < _points; j = i++) {
-                if ( ((ypoints.get(i)>testy) != (ypoints.get(j)>testy)) &&
-                        (testx < (xpoints.get(j)-xpoints.get(i)) * (testy-ypoints.get(i)) / (ypoints.get(j)-ypoints.get(i)) + xpoints.get(i)) )
-                    c = !c;
-            }
-            return c;
-        }
-
-        // For debugging maps, it is occasionally helpful to see the
-        // bounding box for the polygons
-                /*
-                @Override
-                public void onDraw(Canvas canvas) {
-                    // draw the bounding box
-                        canvas.drawRect(left * mResizeFactorX + mScrollLeft,
-                                                top * mResizeFactorY + mScrollTop,
-                                                right * mResizeFactorX + mScrollLeft,
-                                                bottom * mResizeFactorY + mScrollTop,
-                                                textOutlinePaint);
-                }
-                */
-    }
-
-    /**
-     * Circle Area
-     */
-    class CircleArea extends Area {
-        float _x;
-        float _y;
-        float _radius;
-
-        CircleArea(int id, String name, float x, float y, float radius) {
-            super(id,name);
-            _x = x;
-            _y = y;
-            _radius = radius;
-
-        }
-
-        public boolean isInArea(float x, float y) {
-            boolean ret = false;
-
-            float dx = _x-x;
-            float dy = _y-y;
-
-            // if tap is less than radius distance from the center
-            float d = (float)Math.sqrt((dx*dx)+(dy*dy));
-            if (d<_radius) {
-                ret = true;
-            }
-
-            return ret;
-        }
-
-        public float getOriginX() {
-            return _x;
-        }
-
-        public float getOriginY() {
-            return _y;
-        }
-    }
-
-    /**
-     * information bubble class
-     */
-    class Bubble
-    {
-        Area _a;
-        String _text;
-        float _x;
-        float _y;
-        int _h;
-        int _w;
-        int _baseline;
-        float _top;
-        float _left;
-
-        Bubble(String text, float x, float y)
-        {
-            init(text,x,y);
-        }
-
-        Bubble(String text, int areaId)
-        {
-            _a = mIdToArea.get(areaId);
-            if (_a != null) {
-                float x = _a.getOriginX();
-                float y = _a.getOriginY();
-                init(text,x,y);
-            }
-        }
-
-        void init(String text, float x, float y)
-        {
-            _text = text;
-            _x = x*mResizeFactorX;
-            _y = y*mResizeFactorY;
-            Rect bounds = new Rect();
-            textPaint.setTextScaleX(1.0f);
-            textPaint.getTextBounds(text, 0, _text.length(), bounds);
-            _h = bounds.bottom-bounds.top+20;
-            _w = bounds.right-bounds.left+20;
-
-            if (_w>mViewWidth) {
-                // too long for the display width...need to scale down
-                float newscale=((float)mViewWidth/(float)_w);
-                textPaint.setTextScaleX(newscale);
-                textPaint.getTextBounds(text, 0, _text.length(), bounds);
-                _h = bounds.bottom-bounds.top+20;
-                _w = bounds.right-bounds.left+20;
-            }
-
-            _baseline = _h-bounds.bottom;
-            _left = _x - (_w/2);
-            _top = _y - _h - 30;
-
-            // try to keep the bubble on screen
-            if (_left < 0) {
-                _left = 0;
-            }
-            if ((_left + _w) > mExpandWidth) {
-                _left = mExpandWidth - _w;
-            }
-            if (_top < 0) {
-                _top = _y + 20;
-            }
-        }
-
-        public boolean isInArea(float x, float y) {
-            boolean ret = false;
-
-            if ((x>_left) && (x<(_left+_w))) {
-                if ((y>_top)&&(y<(_top+_h))) {
-                    ret = true;
-                }
-            }
-
-            return ret;
-        }
-
-        void onDraw(Canvas canvas)
-        {
-            if (_a != null) {
-                // Draw a shadow of the bubble
-                float l = _left + mScrollLeft + 4;
-                float t = _top + mScrollTop + 4;
-                canvas.drawRoundRect(new RectF(l,t,l+_w,t+_h), 20.0f, 20.0f, bubbleShadowPaint);
-                Path path = new Path();
-                float ox=_x+ mScrollLeft+ 1;
-                float oy=_y+mScrollTop+ 1;
-                int yoffset=-35;
-                if (_top > _y) {
-                    yoffset=35;
-                }
-                // draw shadow of pointer to origin
-                path.moveTo(ox,oy);
-                path.lineTo(ox-5,oy+yoffset);
-                path.lineTo(ox+5+4,oy+yoffset);
-                path.lineTo(ox, oy);
-                path.close();
-                canvas.drawPath(path, bubbleShadowPaint);
-
-                // draw the bubble
-                l = _left + mScrollLeft;
-                t = _top + mScrollTop;
-                canvas.drawRoundRect(new RectF(l,t,l+_w,t+_h), 20.0f, 20.0f, bubblePaint);
-                path = new Path();
-                ox=_x+ mScrollLeft;
-                oy=_y+mScrollTop;
-                yoffset=-35;
-                if (_top > _y)
-                {
-                    yoffset=35;
-                }
-                // draw pointer to origin
-                path.moveTo(ox,oy);
-                path.lineTo(ox-5,oy+yoffset);
-                path.lineTo(ox+5,oy+yoffset);
-                path.lineTo(ox, oy);
-                path.close();
-                canvas.drawPath(path, bubblePaint);
-
-                // draw the message
-                canvas.drawText(_text,l+(_w/2),t+_baseline-10,textPaint);
-            }
-        }
-
-        void onTapped() {
-            // bubble was tapped, notify listeners
-            if (mCallbackList != null) {
-                for (OnImageMapClickedHandler h : mCallbackList) {
-                    h.onBubbleClicked(_a.getId());
-                }
-            }
-        }
-    }
-
-    /**
-     * Map tapped callback interface
-     */
-    public interface OnImageMapClickedHandler
-    {
-        /**
-         * Area with 'id' has been tapped
-         * @param id
-         */
-        void onImageMapClicked(int id, ImageMap imageMap);
-        /**
-         * Info bubble associated with area 'id' has been tapped
-         * @param id
-         */
-        void onBubbleClicked(int id);
     }
 
 	/*
