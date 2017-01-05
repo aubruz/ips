@@ -1,16 +1,14 @@
-package com.mse.wifiposition;
+package com.mse.wifiposition.view;
 
+import com.mse.wifiposition.R;
 import com.mse.wifiposition.lib.*;
+import com.mse.wifiposition.listener.OnMapViewClickListener;
+
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -23,15 +21,12 @@ import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-public class ImageMap extends ImageView
+public class MapView extends ImageView
 {
     // mFitImageToScreen
     // if true - initial image resized to fit the screen, aspect ratio may be broken
@@ -129,10 +124,11 @@ public class ImageMap extends ImageView
     SparseArray<Area> mIdToArea = new SparseArray<Area>();
 
     // click handler list
-    ArrayList<OnImageMapClickedHandler> mCallbackList;
+    ArrayList<OnMapViewClickListener> mCallbackList;
 
     // list of open info bubbles
     SparseArray<Bubble> mBubbleMap = new SparseArray<Bubble>();
+    List<Point> mPointMap = new ArrayList<Point>();
 
     // changed this from local variable to class field
     protected String mapName;
@@ -146,18 +142,18 @@ public class ImageMap extends ImageView
     /*
      * Constructors
      */
-    public ImageMap(Context context) {
+    public MapView(Context context) {
         super(context);
         init();
     }
 
-    public ImageMap(Context context, AttributeSet attrs) {
+    public MapView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
         //loadAttributes(attrs);
     }
 
-    public ImageMap(Context context, AttributeSet attrs, int defStyle)
+    public MapView(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
         init();
@@ -323,13 +319,20 @@ public class ImageMap extends ImageView
         mIdToArea.put(a.getId(), a);
     }
 
+    public void addPoint(float x, float y, int radius){
+        Point p = new Point(x, y, radius, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
+        mPointMap.add(p);
+    }
+
     public void addBubble(String text, int areaId )
     {
-        if (mBubbleMap.get(areaId) == null)
+       /* if (mBubbleMap.get(areaId) == null)
         {
             Bubble b = new Bubble(text,areaId, mResizeFactorX, mResizeFactorY, textPaint, mViewWidth, mExpandWidth, mIdToArea);
             mBubbleMap.put(areaId,b);
-        }
+        }*/
+        Bubble b = new Bubble(text, 150, 150, mResizeFactorX, mResizeFactorY, textPaint, mViewWidth, mExpandWidth);
+        mBubbleMap.put(areaId,b);
     }
 
     public void showBubble(String text, int areaId)
@@ -758,13 +761,16 @@ public class ImageMap extends ImageView
                 b.onDraw(canvas, mScrollLeft, mScrollTop, bubbleShadowPaint, bubblePaint, textPaint);
             }
         }
-        Path path = new Path();
-        path.moveTo(50 + mScrollLeft ,50 + mScrollTop);
-        path.lineTo(50 + mScrollLeft,100 + mScrollTop);
-        path.lineTo(100 + mScrollLeft,100 + mScrollTop);
-        path.lineTo(100 + mScrollLeft, 50 + mScrollTop);
-        path.close();
-        canvas.drawPath(path, textPaint);
+
+        for (Point p: mPointMap)
+        {
+            /*int key = mPointMap.keyAt(i);
+            Point p = mPointMap.get(key);
+            if (p != null)
+            {*/
+            p.onDraw(canvas, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop, textPaint);
+            //}
+        }
     }
 
     protected void drawLocations(Canvas canvas)
@@ -1123,11 +1129,19 @@ public class ImageMap extends ImageView
      */
     void onScreenTapped(int x, int y)
     {
+        if (mCallbackList != null) {
+            for (OnMapViewClickListener h : mCallbackList)
+            {
+                h.onScreenTapped(x, y);
+            }
+        }
+
         boolean missed = true;
         boolean bubble = false;
         // adjust for scroll
         int testx = x-mScrollLeft;
         int testy = y-mScrollTop;
+
 
 		/*
 			Empirically, this works, but it's not guaranteed to be correct.
@@ -1182,7 +1196,7 @@ public class ImageMap extends ImageView
                 if (a.isInArea((float)testx,(float)testy))
                 {
                     if (mCallbackList != null) {
-                        for (OnImageMapClickedHandler h : mCallbackList)
+                        for (OnMapViewClickListener h : mCallbackList)
                         {
                             h.onImageMapClicked(a.getId(), this);
                         }
@@ -1267,16 +1281,16 @@ public class ImageMap extends ImageView
     /*
      * on clicked handler add/remove support
      */
-    public void addOnImageMapClickedHandler( OnImageMapClickedHandler h ) {
+    public void addOnMapViewClickedListener( OnMapViewClickListener h ) {
         if (h != null) {
             if (mCallbackList == null) {
-                mCallbackList = new ArrayList<OnImageMapClickedHandler>();
+                mCallbackList = new ArrayList<OnMapViewClickListener>();
             }
             mCallbackList.add(h);
         }
     }
 
-    public void removeOnImageMapClickedHandler( OnImageMapClickedHandler h ) {
+    public void removeOnMapViewClickedListener( OnMapViewClickListener h ) {
         if (mCallbackList != null) {
             if (h != null) {
                 mCallbackList.remove(h);
@@ -1284,10 +1298,9 @@ public class ImageMap extends ImageView
         }
     }
 
-	/*
-	* Misc getters
-	* TODO: setters for there?
-	*/
+	/**
+	 * Misc getters
+	 */
 
     public float getmMaxSize()
     {

@@ -10,7 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:baselineAligned="false"
     android:orientation="vertical"
-    tools:context="com.mse.wifiposition.MainActivity">
+    tools:context="com.mse.wifiposition.activity.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
         android:layout_weight="50"
         android:orientation="horizontal" >
 
-        <com.mse.wifiposition.ImageMap
+        <com.mse.wifiposition.view.MapView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

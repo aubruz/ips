@@ -1,4 +1,4 @@
-package com.mse.wifiposition;
+package com.mse.wifiposition.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,7 +12,6 @@ import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,6 +33,8 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
+import com.mse.wifiposition.R;
+import com.mse.wifiposition.view.widget.SpinnerItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;

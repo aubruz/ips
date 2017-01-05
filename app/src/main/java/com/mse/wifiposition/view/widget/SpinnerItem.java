@@ -1,4 +1,4 @@
-package com.mse.wifiposition;
+package com.mse.wifiposition.view.widget;
 
 public class SpinnerItem {
     private String name;
