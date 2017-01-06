@@ -10,10 +10,13 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -84,6 +87,10 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_save_fingerprints);
+
+        //Menu
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
 
         // Widgets
         mText = (TextView) findViewById(R.id.text);
@@ -165,11 +172,18 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     AdapterView.OnItemSelectedListener OnSelectionListener =  new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            SpinnerItem item;
             switch (parent.getId()) {
                 case R.id.spinnerBuildings:
-                    SpinnerItem item = (SpinnerItem) parent.getItemAtPosition(position);
+                    item = (SpinnerItem) parent.getItemAtPosition(position);
                     getFloorsFromBuildingId(item.getTag());
                     //Toast.makeText(parent.getContext(), item.getName() + " " + item.getTag(), Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.spinnerFloors:
+                    item = (SpinnerItem) parent.getItemAtPosition(position);
+                    mGetImageTask = new GetBitmapFromUrlTask();
+                    mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/"+item.getTag());
+                    mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
                     break;
             }
         }
@@ -299,10 +313,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, R.id.refresh, 0, "Refresh");
-        menu.add(0, R.id.add_point, 1, "Add point").setCheckable(true);
-
-        return super.onCreateOptionsMenu(menu);
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        //R.menu.menu est l'id de notre menu
+        inflater.inflate(R.menu.save_fingerprints, menu);
+        return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -315,11 +330,14 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
                 mCanAddPoint = true;
 
                 break;
+            case R.id.cancel:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void getBuildings(){
+        Toast.makeText(this, R.string.loading_buildings, Toast.LENGTH_SHORT).show();
         AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings")
             .setPriority(Priority.MEDIUM)
             .build()
@@ -335,6 +353,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
                             mBuildingsList.add(new SpinnerItem(row.getString("name"), row.getString("id")));
                         }
                         mBuildingsAdapter.notifyDataSetChanged();
+                        Toast.makeText(SaveFingerprintsActivity.this, R.string.loading_finished, Toast.LENGTH_SHORT).show();
                     }catch (JSONException e){
                         e.printStackTrace();
                     }

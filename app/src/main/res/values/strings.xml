@@ -16,4 +16,9 @@
     <string name="wifi">WiFi</string>
     <string name="magnetic_field">Champ magnétique</string>
     <string name="point_parameters">Paramètres du point</string>
+    <string name="refresh">Recharger les données</string>
+    <string name="add_points">Ajouter des points</string>
+    <string name="cancel">Annuler</string>
+    <string name="loading_buildings">Chargement des batiments...</string>
+    <string name="loading_finished">Chargement terminé.</string>
 </resources>

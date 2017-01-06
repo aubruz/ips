@@ -1195,6 +1195,7 @@ public class MapView extends ImageView
             if(p.isTouched((x - mScrollLeft) / mResizeFactorX, (y - mScrollTop) / mResizeFactorY)){
                 p.onSelected(mCallbackList);
                 missed=false;
+                break;
             }
             //}
         }
