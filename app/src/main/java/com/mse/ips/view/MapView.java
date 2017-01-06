@@ -1192,10 +1192,9 @@ public class MapView extends ImageView
             if (p != null)
             {*/
             p.deactivate();
-            if(p.isTouched((x - mScrollLeft) / mResizeFactorX, (y - mScrollTop) / mResizeFactorY)){
+            if(missed && p.isTouched((x - mScrollLeft) / mResizeFactorX, (y - mScrollTop) / mResizeFactorY)){
                 p.onSelected(mCallbackList);
                 missed=false;
-                break;
             }
             //}
         }
