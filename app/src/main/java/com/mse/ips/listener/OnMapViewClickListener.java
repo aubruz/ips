@@ -1,5 +1,6 @@
 package com.mse.ips.listener;
 
+import com.mse.ips.lib.Point;
 import com.mse.ips.view.MapView;
 
 /**
@@ -18,6 +19,12 @@ public interface OnMapViewClickListener {
      * @param id int
      */
     void onBubbleClicked(int id);
+
+    /**
+     * Info bubble associated with area 'id' has been tapped
+     * @param point Point
+     */
+    void onPointSelected(Point point);
 
     /**
      * The screen has been tapped tapped

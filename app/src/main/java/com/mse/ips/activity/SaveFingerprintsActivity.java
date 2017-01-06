@@ -36,6 +36,7 @@ import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
 import com.mse.ips.R;
 import com.mse.ips.lib.GetBitmapFromUrlTask;
+import com.mse.ips.lib.Point;
 import com.mse.ips.lib.SpinnerItem;
 import com.mse.ips.listener.OnMapViewClickListener;
 import com.mse.ips.view.MapView;
@@ -48,9 +49,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class SaveFingerprints extends AppCompatActivity {
+public class SaveFingerprintsActivity extends AppCompatActivity {
     private MapView mImageView = null;
     private GetBitmapFromUrlTask mGetImageTask = null;
+    private boolean mCanAddPoint = false;
+    private Point mCurrentPoint = null;
     private TextView mText = null;
     WifiManager mWifiManager;
     WifiReceiver mReceiverWifi;
@@ -99,13 +102,13 @@ public class SaveFingerprints extends AppCompatActivity {
 
         // Spinners
         mBuildingsList = new ArrayList<>();
-        mBuildingsAdapter = new ArrayAdapter<>(SaveFingerprints.this, android.R.layout.simple_spinner_item, mBuildingsList);
+        mBuildingsAdapter = new ArrayAdapter<>(SaveFingerprintsActivity.this, android.R.layout.simple_spinner_item, mBuildingsList);
         mBuildingsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerBuildings.setAdapter(mBuildingsAdapter);
         mSpinnerBuildings.setOnItemSelectedListener(OnSelectionListener);
 
         mFloorsList = new ArrayList<>();
-        mFloorsAdapter = new ArrayAdapter<>(SaveFingerprints.this, android.R.layout.simple_spinner_item, mFloorsList);
+        mFloorsAdapter = new ArrayAdapter<>(SaveFingerprintsActivity.this, android.R.layout.simple_spinner_item, mFloorsList);
         mFloorsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerFloors.setAdapter(mFloorsAdapter);
         mSpinnerFloors.setOnItemSelectedListener(OnSelectionListener);
@@ -132,7 +135,6 @@ public class SaveFingerprints extends AppCompatActivity {
         mGetImageTask = new GetBitmapFromUrlTask();
         mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/43284381");
         mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
-        mImageView.addPoint(150, 150, 50);
         mImageView.addOnMapViewClickedListener(new OnMapViewClickListener()
         {
             @Override
@@ -148,10 +150,14 @@ public class SaveFingerprints extends AppCompatActivity {
             }
 
             @Override
+            public void onPointSelected(Point point){
+                mCurrentPoint = point;
+            }
+
+            @Override
             public void onScreenTapped(float x, float y)
             {
-                mImageView.addPoint(x, y, 50);
-                Log.d("Screen", " Taped on X: " + x + " Y: " + y);
+                mCurrentPoint = mImageView.addPoint(x, y);
             }
         });
     }
@@ -251,7 +257,7 @@ public class SaveFingerprints extends AppCompatActivity {
                 mSensorManager.registerListener(mSensorEventListener, mMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
                 mSensorManager.registerListener(mSensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
             }
-            Toast.makeText(SaveFingerprints.this, "Enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
+            Toast.makeText(SaveFingerprintsActivity.this, "Enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
             mButton.setText(R.string.stop);
             // Disable switches
             mSwitchBluetooh.setEnabled(false);
@@ -269,7 +275,7 @@ public class SaveFingerprints extends AppCompatActivity {
                 mSensorManager.unregisterListener(mSensorEventListener, mMagneticField);
                 mSensorManager.unregisterListener(mSensorEventListener, mAccelerometer);
             }
-            Toast.makeText(SaveFingerprints.this, "Arrêt de l'enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
+            Toast.makeText(SaveFingerprintsActivity.this, "Arrêt de l'enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
             mButton.setText(R.string.start);
         }
     }
@@ -293,13 +299,23 @@ public class SaveFingerprints extends AppCompatActivity {
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, 0, 0, "Refresh");
+        menu.add(0, R.id.refresh, 0, "Refresh");
+        menu.add(0, R.id.add_point, 1, "Add point").setCheckable(true);
+
         return super.onCreateOptionsMenu(menu);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Refresh buildings list
-        getBuildings();
+        switch(item.getItemId()) {
+            case  R.id.refresh:
+                // Refresh buildings list
+                getBuildings();
+                break;
+            case R.id.add_point:
+                mCanAddPoint = true;
+
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -310,7 +326,7 @@ public class SaveFingerprints extends AppCompatActivity {
             .getAsJSONObject(new JSONObjectRequestListener() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    //Toast.makeText(SaveFingerprints.this, response.toString(), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
                     try{
                         mBuildingsList.clear();
                         JSONArray buildings = (JSONArray) response.get("buildings");
@@ -342,7 +358,7 @@ public class SaveFingerprints extends AppCompatActivity {
             .getAsJSONObject(new JSONObjectRequestListener() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    //Toast.makeText(SaveFingerprints.this, response.toString(), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
                     try{
                         mFloorsList.clear();
                         JSONArray buildings = (JSONArray) response.get("floors");
@@ -402,7 +418,7 @@ public class SaveFingerprints extends AppCompatActivity {
                          @Override
                          public void onResponse(JSONObject response) {
                              //mTextTest.setText(response.toString());
-                             Toast.makeText(SaveFingerprints.this, response.toString(), Toast.LENGTH_SHORT).show();
+                             Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
                          }
                          @Override
                          public void onError(ANError error) {
@@ -474,7 +490,7 @@ public class SaveFingerprints extends AppCompatActivity {
                             @Override
                             public void onResponse(JSONObject response) {
                                 //mTextTest.setText(response.toString());
-                                Toast.makeText(SaveFingerprints.this, response.toString(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
                             }
                             @Override
                             public void onError(ANError error) {

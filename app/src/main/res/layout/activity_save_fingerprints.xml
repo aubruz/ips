@@ -9,13 +9,13 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context="com.mse.ips.activity.SaveFingerprints">
+    tools:context="com.mse.ips.activity.SaveFingerprintsActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="50"
-        android:orientation="horizontal" >
+        android:layout_weight="60"
+        android:orientation="horizontal">
 
         <com.mse.ips.view.MapView
             android:id="@+id/imageView"
@@ -24,10 +24,20 @@
 
     </LinearLayout>
 
+    <TextView
+        android:text="@string/point_parameters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="@color/black"/>
+
+
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="50" >
+        android:layout_weight="40"
+        android:layout_marginTop="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -57,7 +67,7 @@
             android:labelFor="@+id/point_name"
             android:layout_marginTop="16dp" />
 
-        <EditText
+            <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
@@ -122,12 +132,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/button"
             android:layout_marginTop="27dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="34dp"
-            android:id="@+id/text" />
         </LinearLayout>
 
     </ScrollView>

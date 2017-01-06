@@ -9,7 +9,6 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,12 +21,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void goToSaveFingerprintsActivity(){
-        Intent intent = new Intent(MainActivity.this, SaveFingerprints.class);
+        Intent intent = new Intent(MainActivity.this, SaveFingerprintsActivity.class);
         startActivity(intent);
     }
 
     private void goToFindLocationActivity(){
-        Intent intent = new Intent(MainActivity.this, GetLocation.class);
+        Intent intent = new Intent(MainActivity.this, GetLocationActivity.class);
         startActivity(intent);
     }
 

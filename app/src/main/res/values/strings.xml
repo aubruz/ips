@@ -15,4 +15,5 @@
     <string name="bluetooth">Bluetooth</string>
     <string name="wifi">WiFi</string>
     <string name="magnetic_field">Champ magnétique</string>
+    <string name="point_parameters">Paramètres du point</string>
 </resources>

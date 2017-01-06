@@ -14,7 +14,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -86,6 +88,9 @@ public class MapView extends ImageView
     Paint textOutlinePaint;
     Paint bubblePaint;
     Paint bubbleShadowPaint;
+    Paint mBorderPaint;
+
+    Rect mBorder;
 
     /*
      * Bitmap handling
@@ -325,9 +330,10 @@ public class MapView extends ImageView
         mIdToArea.put(a.getId(), a);
     }
 
-    public void addPoint(float x, float y, int radius){
-        Point p = new Point(x, y, radius, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
+    public Point addPoint(float x, float y){
+        Point p = new Point(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
         mPointMap.add(p);
+        return p;
     }
 
     public void addBubble(String text, int areaId )
@@ -402,11 +408,13 @@ public class MapView extends ImageView
      */
     private void init()
     {
-        this.mFitImageToScreen = false;
-        this.mScaleFromOriginal = true;
-        this.mMaxSize = 10.5f;
+        mFitImageToScreen = false;
+        mScaleFromOriginal = true;
+        mMaxSize = 10.5f;
+
         // set up paint objects
         initDrawingTools();
+        mBorder = new Rect(0, 0, 0, 0);
 
         // create a scroller for flinging
         mScroller = new Scroller(getContext());
@@ -511,6 +519,10 @@ public class MapView extends ImageView
         bubbleShadowPaint=new Paint();
         bubbleShadowPaint.setColor(0xFF000000);
 
+        mBorderPaint = new Paint();
+        mBorderPaint.setStyle(Paint.Style.STROKE);
+        mBorderPaint.setStrokeWidth(10);
+        mBorderPaint.setColor(Color.BLACK);
     }
 
     /*
@@ -787,6 +799,12 @@ public class MapView extends ImageView
         }
     }
 
+    protected void drawBorder(Canvas canvas)
+    {
+        mBorder.set(0, 0, canvas.getWidth(), canvas.getHeight());
+        canvas.drawRect(mBorder, mBorderPaint);
+    }
+
     /**
      * Paint the view
      *   image first, location decorations next, bubbles on top
@@ -797,6 +815,7 @@ public class MapView extends ImageView
         drawMap(canvas);
         drawLocations(canvas);
         drawBubbles(canvas);
+        drawBorder(canvas);
     }
 
     /*
@@ -840,7 +859,6 @@ public class MapView extends ImageView
                 // events.  Whenever ACTION_DOWN happens, it is intended
                 // to always be the first touch, so we will drop tracking
                 // for any points that may have been orphaned
-                Log.d("Point", "X: "+ (ev.getX() - mScrollLeft) + " Y: "+ev.getY());
                 for ( TouchPoint t: mTouchPoints.values() ) {
                     onLostTouch(t.getTrackingPointer());
                 }
@@ -1135,13 +1153,6 @@ public class MapView extends ImageView
      */
     void onScreenTapped(int x, int y)
     {
-        if (mCallbackList != null) {
-            for (OnMapViewClickListener h : mCallbackList)
-            {
-                h.onScreenTapped(x, y);
-            }
-        }
-
         boolean missed = true;
         boolean bubble = false;
         // adjust for scroll
@@ -1173,52 +1184,33 @@ public class MapView extends ImageView
             testy = (int)(((float)testy/mResizeFactorY)/densityFactor);
         }
 
-        // check if bubble tapped first
-        // in case a bubble covers an area we want it to
-        // have precedent
-        for (int i = 0 ; i < mBubbleMap.size() ; i++)
+        for (int i = 0; i<mPointMap.size(); i++)
         {
-            int key = mBubbleMap.keyAt(i);
-            Bubble b = mBubbleMap.get(key);
-            //it can still be null if there are no bubbles at all
-            if (b != null)
-            {
-                if (b.isInArea((float)x-mScrollLeft,(float)y-mScrollTop))
-                {
-                    b.onTapped(mCallbackList);
-                    bubble=true;
-                    missed=false;
-                    // only fire tapped for one bubble
-                    break;
-                }
+            Point p = mPointMap.get(i);
+            /*int key = mPointMap.keyAt(i);
+            Point p = mPointMap.get(key);
+            if (p != null)
+            {*/
+            p.deactivate();
+            if(p.isTouched((x - mScrollLeft) / mResizeFactorX, (y - mScrollTop) / mResizeFactorY)){
+                p.onSelected(mCallbackList);
+                missed=false;
             }
+            //}
         }
 
-        if (!bubble)
-        {
-            // then check for area taps
-            for (Area a : mAreaList)
-            {
-                if (a.isInArea((float)testx,(float)testy))
-                {
-                    if (mCallbackList != null) {
-                        for (OnMapViewClickListener h : mCallbackList)
-                        {
-                            h.onImageMapClicked(a.getId(), this);
-                        }
-                    }
-                    missed=false;
-                    // only fire clicked for one area
-                    break;
-                }
-            }
-        }
-
+        invalidate();
         if (missed)
         {
             // managed to miss everything, clear bubbles
             mBubbleMap.clear();
-            invalidate();
+
+            if (mCallbackList != null) {
+                for (OnMapViewClickListener h : mCallbackList)
+                {
+                    h.onScreenTapped(x, y);
+                }
+            }
         }
     }
 

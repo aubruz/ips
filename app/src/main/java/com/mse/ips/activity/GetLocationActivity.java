@@ -31,7 +31,7 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.UUID;
 
-public class GetLocation extends AppCompatActivity {
+public class GetLocationActivity extends AppCompatActivity {
     private Button mStartStopButton = null;
     private TextView mScanResults = null;
     private TextView mRoomValue = null;
@@ -103,10 +103,10 @@ public class GetLocation extends AppCompatActivity {
             if(mSwitchBluetooh.isChecked()) {
                 mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
             }
-            Toast.makeText(GetLocation.this, "Recherche de la localisation en cours" , Toast.LENGTH_SHORT).show();
+            Toast.makeText(GetLocationActivity.this, "Recherche de la localisation en cours" , Toast.LENGTH_SHORT).show();
             mStartStopButton.setText(R.string.stop);
         }else{
-            Toast.makeText(GetLocation.this, "Arrêt de la recherche" , Toast.LENGTH_SHORT).show();
+            Toast.makeText(GetLocationActivity.this, "Arrêt de la recherche" , Toast.LENGTH_SHORT).show();
             mStartStopButton.setText(R.string.start);
         }
     }
