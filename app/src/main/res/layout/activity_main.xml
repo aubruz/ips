@@ -33,7 +33,7 @@
         android:id="@+id/btn_find_location"
         android:layout_marginTop="20dp" />
     <Button
-        android:text="@string/btn_label_find_location"
+        android:text="@string/btn_label_show_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btn_show_info"
