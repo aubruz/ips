@@ -328,9 +328,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
                 break;
             case R.id.add_point:
                 mCanAddPoint = true;
+                Log.d("Menu", "Add point");
 
                 break;
             case R.id.cancel:
+                Log.d("Menu", "CANCEL");
                 break;
         }
         return super.onOptionsItemSelected(item);

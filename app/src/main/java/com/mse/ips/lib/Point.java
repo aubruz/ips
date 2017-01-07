@@ -28,7 +28,7 @@ public class Point
     public void onDraw(Canvas canvas, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop, Paint textPaint)
     {
         if(mIsActive){
-            textPaint.setColor(Color.RED);
+            textPaint.setColor(Color.parseColor("#5cc7c0"));
             canvas.drawCircle(mX * resizeFactorX + scrollLeft, mY * resizeFactorY + scrollTop, mRadius + 10, textPaint);
         }
         textPaint.setColor(Color.BLACK);
