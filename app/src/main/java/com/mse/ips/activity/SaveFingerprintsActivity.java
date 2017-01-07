@@ -164,7 +164,9 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
             @Override
             public void onScreenTapped(float x, float y)
             {
-                mCurrentPoint = mImageView.addPoint(x, y);
+                if(mCanAddPoint) {
+                    mCurrentPoint = mImageView.addPoint(x, y);
+                }
             }
         });
     }
@@ -327,8 +329,8 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
                 getBuildings();
                 break;
             case R.id.add_point:
-                mCanAddPoint = true;
-                Log.d("Menu", "Add point");
+
+                mCanAddPoint = !mCanAddPoint;
 
                 break;
             case R.id.cancel:

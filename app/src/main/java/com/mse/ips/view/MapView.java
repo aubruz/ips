@@ -1,18 +1,11 @@
 package com.mse.ips.view;
 
-import com.mse.ips.lib.Area;
-import com.mse.ips.lib.Bubble;
-import com.mse.ips.lib.CircleArea;
 import com.mse.ips.lib.Point;
-import com.mse.ips.lib.PolyArea;
-import com.mse.ips.lib.RectArea;
 import com.mse.ips.lib.TouchPoint;
 import com.mse.ips.listener.OnMapViewClickListener;
-import com.mse.ips.R;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -21,7 +14,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -29,9 +21,7 @@ import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class MapView extends ImageView
@@ -54,13 +44,8 @@ public class MapView extends ImageView
     // by default, this is false
     private boolean mScaleFromOriginal=false;
 
-    // mMaxSize controls the maximum zoom size as a multiplier of the initial size.
-    // Allowing size to go too large may result in memory problems.
-    //  set this to 1.0f to disable resizing
-    // by default, this is 1.5f
-    private static final float defaultMaxSize = 1.5f;
     private float mMaxSize = 1.5f;
-    private float mMaxZoom = 5.0f;
+    private final float MAXZOOM = 5.0f;
 
     /* Touch event handling variables */
     private VelocityTracker mVelocityTracker;
@@ -73,7 +58,7 @@ public class MapView extends ImageView
 
     private boolean mIsBeingDragged = false;
 
-    HashMap<Integer,TouchPoint> mTouchPoints = new HashMap<Integer,TouchPoint>();
+    SparseArray<TouchPoint> mTouchPoints = new SparseArray<>();
     TouchPoint mMainTouch=null;
     TouchPoint mPinchTouch=null;
 
@@ -127,28 +112,14 @@ public class MapView extends ImageView
     int mViewHeight=-1;
     int mViewWidth=-1;
 
-    /*
-     * containers for the image map areas
-     * using SparseArray<Area> instead of HashMap for the sake of performance
-     */
-    ArrayList<Area> mAreaList = new ArrayList<Area>();
-    SparseArray<Area> mIdToArea = new SparseArray<Area>();
-
     // click handler list
     ArrayList<OnMapViewClickListener> mCallbackList;
 
-    // list of open info bubbles
-    SparseArray<Bubble> mBubbleMap = new SparseArray<Bubble>();
-    List<Point> mPointMap = new ArrayList<Point>();
-
-    // changed this from local variable to class field
-    protected String mapName;
+    // list of points
+    List<Point> mPointMap = new ArrayList<>();
 
     // accounting for screen density
     protected float densityFactor;
-
-    //possible to reduce memory consumption
-    protected BitmapFactory.Options options;
 
     /*
      * Constructors
@@ -171,237 +142,12 @@ public class MapView extends ImageView
         //loadAttributes(attrs);
     }
 
-    /**
-     * get the map name from the attributes and load areas from xml
-     * @param attrs
-     */
-    /*private void loadAttributes(AttributeSet attrs)
-    {
-        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.ImageMap);
-
-        this.mFitImageToScreen = a.getBoolean(R.styleable.ImageMap_fitImageToScreen, true);
-        this.mScaleFromOriginal = a.getBoolean(R.styleable.ImageMap_scaleFromOriginal, false);
-        this.mMaxSize = a.getFloat(R.styleable.ImageMap_maxSizeFactor, defaultMaxSize);
-
-        this.mapName = a.getString(R.styleable.ImageMap_map);
-        if (mapName != null)
-        {
-            loadMap(mapName);
-        }
-    }*/
-
-    /**
-     * parse the maps.xml resource and pull out the areas
-     * @param map - the name of the map to load
-     */
-    /*private void loadMap(String map) {
-        boolean loading = false;
-        try {
-            XmlResourceParser xpp = getResources().getXml(R.xml.maps);
-
-            int eventType = xpp.getEventType();
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if(eventType == XmlPullParser.START_DOCUMENT) {
-                    // Start document
-                    //  This is a useful branch for a debug log if
-                    //  parsing is not working
-                } else if(eventType == XmlPullParser.START_TAG) {
-                    String tag = xpp.getName();
-
-                    if (tag.equalsIgnoreCase("map")) {
-                        String mapname = xpp.getAttributeValue(null, "name");
-                        if (mapname !=null) {
-                            if (mapname.equalsIgnoreCase(map)) {
-                                loading=true;
-                            }
-                        }
-                    }
-                    if (loading) {
-                        if (tag.equalsIgnoreCase("area")) {
-                            Area a=null;
-                            String shape = xpp.getAttributeValue(null, "shape");
-                            String coords = xpp.getAttributeValue(null, "coords");
-                            String id = xpp.getAttributeValue(null, "id");
-
-                            // as a name for this area, try to find any of these
-                            // attributes
-                            //  name attribute is custom to this impl (not standard in html area tag)
-                            String name = xpp.getAttributeValue(null, "name");
-                            if (name == null) {
-                                name = xpp.getAttributeValue(null, "title");
-                            }
-                            if (name == null) {
-                                name = xpp.getAttributeValue(null, "alt");
-                            }
-
-                            if ((shape != null) && (coords != null)) {
-                                a = addShape(shape,name,coords,id);
-                                if (a != null) {
-                                    // add all of the area tag attributes
-                                    // so that they are available to the
-                                    // implementation if needed (see getAreaAttribute)
-                                    for (int i=0;i<xpp.getAttributeCount();i++) {
-                                        String attrName = xpp.getAttributeName(i);
-                                        String attrVal = xpp.getAttributeValue(null,attrName);
-                                        a.addValue(attrName, attrVal);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if(eventType == XmlPullParser.END_TAG) {
-                    String tag = xpp.getName();
-                    if (tag.equalsIgnoreCase("map")) {
-                        loading = false;
-                    }
-                }
-                eventType = xpp.next();
-            }
-        } catch (XmlPullParserException xppe) {
-            // Having trouble loading? Log this exception
-        } catch (IOException ioe) {
-            // Having trouble loading? Log this exception
-        }
-    }*/
-
-    /**
-     * Create a new area and add to tracking
-     * Changed this from private to protected!
-     * @param shape
-     * @param name
-     * @param coords
-     * @param id
-     * @return
-     */
-    protected Area addShape( String shape, String name, String coords, String id)
-    {
-        Area a = null;
-        String rid = id.replace("@+id/", "");
-        int _id=0;
-
-        try
-        {
-            Class<R.id> res = R.id.class;
-            Field field = res.getField(rid);
-            _id = field.getInt(null);
-        }
-        catch (Exception e)
-        {
-            _id = 0;
-        }
-        if (_id != 0)
-        {
-            if (shape.equalsIgnoreCase("rect"))
-            {
-                String[] v = coords.split(",");
-                if (v.length == 4)
-                {
-                    a = new RectArea(_id, name, Float.parseFloat(v[0]),
-                            Float.parseFloat(v[1]),
-                            Float.parseFloat(v[2]),
-                            Float.parseFloat(v[3]));
-                }
-            }
-            if (shape.equalsIgnoreCase("circle"))
-            {
-                String[] v = coords.split(",");
-                if (v.length == 3) {
-                    a = new CircleArea(_id,name, Float.parseFloat(v[0]),
-                            Float.parseFloat(v[1]),
-                            Float.parseFloat(v[2])
-                    );
-                }
-            }
-            if (shape.equalsIgnoreCase("poly"))
-            {
-                a = new PolyArea(_id,name, coords);
-            }
-            if (a != null)
-            {
-                addArea(a);
-            }
-        }
-        return a;
-    }
-
-    public void addArea( Area a )
-    {
-        mAreaList.add(a);
-        mIdToArea.put(a.getId(), a);
-    }
-
     public Point addPoint(float x, float y){
         Point p = new Point(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
         mPointMap.add(p);
         return p;
     }
 
-    public void addBubble(String text, int areaId )
-    {
-       /* if (mBubbleMap.get(areaId) == null)
-        {
-            Bubble b = new Bubble(text,areaId, mResizeFactorX, mResizeFactorY, textPaint, mViewWidth, mExpandWidth, mIdToArea);
-            mBubbleMap.put(areaId,b);
-        }*/
-        Bubble b = new Bubble(text, 150, 150, mResizeFactorX, mResizeFactorY, textPaint, mViewWidth, mExpandWidth);
-        mBubbleMap.put(areaId,b);
-    }
-
-    public void showBubble(String text, int areaId)
-    {
-        mBubbleMap.clear();
-        addBubble(text,areaId);
-        invalidate();
-    }
-
-    public void showBubble(int areaId)
-    {
-        mBubbleMap.clear();
-        Area a = mIdToArea.get(areaId);
-        if (a != null)
-        {
-            addBubble(a.getName(),areaId);
-        }
-        invalidate();
-    }
-
-    public void centerArea( int areaId )
-    {
-        Area a = mIdToArea.get(areaId);
-        if (a != null)
-        {
-            float x = a.getOriginX()*mResizeFactorX;
-            float y = a.getOriginY()*mResizeFactorY;
-            int left = (int)((mViewWidth/2)-x);
-            int top  = (int)((mViewHeight/2)-y);
-            moveTo(left,top);
-        }
-    }
-
-    public void centerAndShowArea(String text, int areaId)
-    {
-        centerArea(areaId);
-        showBubble(text,areaId);
-    }
-
-    public void centerAndShowArea(int areaId)
-    {
-        Area a = mIdToArea.get(areaId);
-        if (a != null) {
-            centerAndShowArea(a.getName(),areaId);
-        }
-    }
-
-    public String getAreaAttribute(int areaId, String key)
-    {
-        String value = null;
-        Area a = mIdToArea.get(areaId);
-        if (a != null)
-        {
-            value = a.getValue(key);
-        }
-        return value;
-    }
 
     /**
      * initialize the view
@@ -459,28 +205,6 @@ public class MapView extends ImageView
         mAspect = (float)mImageWidth / mImageHeight;
         setInitialImageBounds();
     }
-
-
-    /*
-    @Override
-    public void setImageResource(int resId)
-    {
-        final String imageKey = String.valueOf(resId);
-        BitmapHelper bitmapHelper = BitmapHelper.getInstance();
-        Bitmap bitmap = bitmapHelper.getBitmapFromMemCache(imageKey);
-
-        // 1 is the default setting, powers of 2 used to decrease image quality (and memory consumption)
-        // TODO: enable variable inSampleSize for low-memory devices
-        options = new BitmapFactory.Options();
-        options.inSampleSize = 1;
-
-        if (bitmap == null)
-        {
-            bitmap = BitmapFactory.decodeResource(getResources(), resId, options);
-            bitmapHelper.addBitmapToMemoryCache(imageKey, bitmap);
-        }
-        setImageBitmap(bitmap);
-    }*/
 
     /*
         setImageDrawable() is called by Android when the android:src attribute is set.
@@ -643,8 +367,8 @@ public class MapView extends ImageView
                         mMinHeight = mViewHeight;
                         mMinWidth = (int)(mAspect*mViewHeight);
                     }
-                    mMaxWidth = (int)(mMinWidth * mMaxZoom);
-                    mMaxHeight = (int)(mMinHeight * mMaxZoom);
+                    mMaxWidth = (int)(mMinWidth * MAXZOOM);
+                    mMaxHeight = (int)(mMinHeight * MAXZOOM);
                 }
 
                 if (newWidth < mMinWidth) {
@@ -681,8 +405,8 @@ public class MapView extends ImageView
      * Set the image to new width and height
      * create a new scaled bitmap and dispose of the previous one
      * recalculate scaling factor and right and bottom bounds
-     * @param newWidth
-     * @param newHeight
+     * @param newWidth int
+     * @param newHeight int
      */
     public void scaleBitmap(int newWidth, int newHeight) {
         // Technically since we always keep aspect ratio intact
@@ -725,8 +449,7 @@ public class MapView extends ImageView
         }
     }
 
-    void resizeBitmap( int amount ) {
-        int adjustWidth = amount;
+    void resizeBitmap( int adjustWidth ) {
         int adjustHeight = (int)(adjustWidth / mAspect);
         scaleBitmap( mExpandWidth+adjustWidth, mExpandHeight+adjustHeight);
     }
@@ -753,7 +476,7 @@ public class MapView extends ImageView
     /**
      * the onDraw routine when we are using a background image
      *
-     * @param canvas
+     * @param canvas Canvas
      */
     protected void drawMap(Canvas canvas)
     {
@@ -768,18 +491,8 @@ public class MapView extends ImageView
         canvas.restore();
     }
 
-    protected void drawBubbles(Canvas canvas)
+    protected void drawPoints(Canvas canvas)
     {
-        for (int i = 0; i < mBubbleMap.size(); i++)
-        {
-            int key = mBubbleMap.keyAt(i);
-            Bubble b = mBubbleMap.get(key);
-            if (b != null)
-            {
-                b.onDraw(canvas, mScrollLeft, mScrollTop, bubbleShadowPaint, bubblePaint, textPaint);
-            }
-        }
-
         for (Point p: mPointMap)
         {
             /*int key = mPointMap.keyAt(i);
@@ -788,14 +501,6 @@ public class MapView extends ImageView
             {*/
             p.onDraw(canvas, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop, textPaint);
             //}
-        }
-    }
-
-    protected void drawLocations(Canvas canvas)
-    {
-        for (Area a : mAreaList)
-        {
-            a.onDraw(canvas, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
         }
     }
 
@@ -813,8 +518,7 @@ public class MapView extends ImageView
     protected void onDraw(Canvas canvas)
     {
         drawMap(canvas);
-        drawLocations(canvas);
-        drawBubbles(canvas);
+        drawPoints(canvas);
         drawBorder(canvas);
     }
 
@@ -859,9 +563,16 @@ public class MapView extends ImageView
                 // events.  Whenever ACTION_DOWN happens, it is intended
                 // to always be the first touch, so we will drop tracking
                 // for any points that may have been orphaned
-                for ( TouchPoint t: mTouchPoints.values() ) {
-                    onLostTouch(t.getTrackingPointer());
+                for (int i = 0; i < mTouchPoints.size(); i++)
+                {
+                    int key = mTouchPoints.keyAt(i);
+                    TouchPoint t = mTouchPoints.get(key);
+                    if (t != null)
+                    {
+                        onLostTouch(t.getTrackingPointer());
+                    }
                 }
+
                 // fall through planned
             case MotionEvent.ACTION_POINTER_DOWN:
                 id = ev.getPointerId(index);
@@ -890,8 +601,14 @@ public class MapView extends ImageView
                 // according to the google devs, CANCEL means cancel
                 // tracking every touch.
                 // cf: http://groups.google.com/group/android-developers/browse_thread/thread/8b14591ead5608a0/ad711bf24520e5c4?pli=1
-                for ( TouchPoint t: mTouchPoints.values() ) {
-                    onLostTouch(t.getTrackingPointer());
+                for (int i = 0; i < mTouchPoints.size(); i++)
+                {
+                    int key = mTouchPoints.keyAt(i);
+                    TouchPoint tp = mTouchPoints.get(key);
+                    if (tp != null)
+                    {
+                        onLostTouch(tp.getTrackingPointer());
+                    }
                 }
                 // let go of the velocity tracker per API Docs
                 if (mVelocityTracker != null) {
@@ -906,7 +623,7 @@ public class MapView extends ImageView
 
     void onTouchDown(int id, float x, float y) {
         // create a new touch point to track this ID
-        TouchPoint t=null;
+        TouchPoint t;
         synchronized (mTouchPoints) {
             // This test is a bit paranoid and research should
             // be done sot that it can be removed.  We should
@@ -1030,10 +747,6 @@ public class MapView extends ImageView
                 // tracking.  This is necessary for proper action
                 // on devices that support > 2 touches
                 regroupTouches();
-            } else {
-                // lost this ID somehow
-                // This happens sometimes due to the way some
-                // devices manage touch
             }
         }
     }
@@ -1063,13 +776,19 @@ public class MapView extends ImageView
      */
     TouchPoint getUnboundPoint() {
         TouchPoint ret=null;
-        for (Integer i : mTouchPoints.keySet()) {
-            TouchPoint p = mTouchPoints.get(i);
-            if ((p!=mMainTouch)&&(p!=mPinchTouch)) {
-                ret = p;
-                break;
+        for (int i = 0; i < mTouchPoints.size(); i++)
+        {
+            int key = mTouchPoints.keyAt(i);
+            TouchPoint tp = mTouchPoints.get(key);
+            if (tp != null)
+            {
+                if ((tp!=mMainTouch)&&(tp!=mPinchTouch)) {
+                    ret = tp;
+                    break;
+                }
             }
         }
+
         return ret;
     }
 
@@ -1154,35 +873,6 @@ public class MapView extends ImageView
     void onScreenTapped(int x, int y)
     {
         boolean missed = true;
-        boolean bubble = false;
-        // adjust for scroll
-        int testx = x-mScrollLeft;
-        int testy = y-mScrollTop;
-
-
-		/*
-			Empirically, this works, but it's not guaranteed to be correct.
-			Seems that we need to divide by densityFactor only if the picture is larger than the screen.
-			When it is smaller than the screen, we don't need to do that.
-
-			TODO: investigate this in detail.
-		 */
-        if (mResizeFactorX > 1)
-        {
-            testx = (int)(((float)testx/mResizeFactorX));
-        }
-        else
-        {
-            testx = (int)(((float)testx/mResizeFactorX)/densityFactor);
-        }
-        if (mResizeFactorY > 1)
-        {
-            testy = (int)(((float)testy/mResizeFactorY));
-        }
-        else
-        {
-            testy = (int)(((float)testy/mResizeFactorY)/densityFactor);
-        }
 
         for (int i = 0; i<mPointMap.size(); i++)
         {
@@ -1202,8 +892,6 @@ public class MapView extends ImageView
         invalidate();
         if (missed)
         {
-            // managed to miss everything, clear bubbles
-            mBubbleMap.clear();
 
             if (mCallbackList != null) {
                 for (OnMapViewClickListener h : mCallbackList)
@@ -1282,7 +970,7 @@ public class MapView extends ImageView
     public void addOnMapViewClickedListener( OnMapViewClickListener h ) {
         if (h != null) {
             if (mCallbackList == null) {
-                mCallbackList = new ArrayList<OnMapViewClickListener>();
+                mCallbackList = new ArrayList<>();
             }
             mCallbackList.add(h);
         }
@@ -1294,24 +982,5 @@ public class MapView extends ImageView
                 mCallbackList.remove(h);
             }
         }
-    }
-
-	/**
-	 * Misc getters
-	 */
-
-    public float getmMaxSize()
-    {
-        return mMaxSize;
-    }
-
-    public boolean ismScaleFromOriginal()
-    {
-        return mScaleFromOriginal;
-    }
-
-    public boolean ismFitImageToScreen()
-    {
-        return mFitImageToScreen;
     }
 }
