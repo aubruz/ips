@@ -16,8 +16,10 @@ public class MainActivity extends AppCompatActivity {
 
         Button mBtnSaveFingerprints = (Button) findViewById(R.id.btn_save_fingerprints);
         Button mBtnGetMyLocation = (Button) findViewById(R.id.btn_find_location);
+        Button mBtnShowInfo = (Button) findViewById(R.id.btn_show_info);
         mBtnSaveFingerprints.setOnClickListener(v -> goToSaveFingerprintsActivity());
         mBtnGetMyLocation.setOnClickListener(v -> goToFindLocationActivity());
+        mBtnShowInfo.setOnClickListener(v -> goToShowInfoActivity());
     }
 
     private void goToSaveFingerprintsActivity(){
@@ -27,6 +29,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void goToFindLocationActivity(){
         Intent intent = new Intent(MainActivity.this, GetLocationActivity.class);
+        startActivity(intent);
+    }
+
+    private void goToShowInfoActivity(){
+        Intent intent = new Intent(MainActivity.this, ShowInfoActivity.class);
         startActivity(intent);
     }
 

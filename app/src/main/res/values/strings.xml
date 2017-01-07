@@ -9,6 +9,7 @@
     <string name="point_name_label">Nom du point</string>
     <string name="btn_label_find_location">Trouver ma position</string>
     <string name="btn_label_save_fingerprints">Créer des fingerprints</string>
+    <string name="btn_label_show_info">Afficher</string>
     <string name="building_spinner_label">Batiment</string>
     <string name="floor_spinner_label">Étage</string>
     <string name="default_floor_id">2059237562</string>

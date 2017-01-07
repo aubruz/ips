@@ -54,7 +54,9 @@ public class GetLocationActivity extends AppCompatActivity {
 
         //Menu
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        if(ab !=null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         mRoomValue = (TextView) findViewById(R.id.room_value);
         mPointNameValue = (TextView) findViewById(R.id.point_name_value);

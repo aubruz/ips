@@ -14,14 +14,15 @@
     <RadioGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:id="@+id/radio_group_technology">
 
         <RadioButton
             android:text="@string/bluetooth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="33"
-            android:id="@+id/radioButton1"
+            android:id="@+id/radio_bluetooth"
             android:checked="true"/>
 
         <RadioButton
@@ -29,14 +30,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="33"
-            android:id="@+id/radioButton2" />
+            android:id="@+id/radio_wifi" />
 
         <RadioButton
             android:text="@string/magnetic_field"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="33"
-            android:id="@+id/radioButton3" />
+            android:id="@+id/radio_magnetic" />
 
     </RadioGroup>
 

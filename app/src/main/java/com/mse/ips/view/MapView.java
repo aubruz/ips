@@ -57,6 +57,7 @@ public class MapView extends ImageView
     private Scroller mScroller;
 
     private boolean mIsBeingDragged = false;
+    private boolean mClickEnabled = true;
 
     SparseArray<TouchPoint> mTouchPoints = new SparseArray<>();
     TouchPoint mMainTouch=null;
@@ -132,20 +133,31 @@ public class MapView extends ImageView
     public MapView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
-        //loadAttributes(attrs);
     }
 
     public MapView(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
         init();
-        //loadAttributes(attrs);
     }
 
-    public Point addPoint(float x, float y){
+    public Point addPoint(float x, float y)
+    {
         Point p = new Point(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
         mPointMap.add(p);
         return p;
+    }
+
+    public boolean removePoint(Point point)
+    {
+        for(int i=0; i<mPointMap.size(); i++){
+            if(mPointMap.get(i).getX() == point.getX() && mPointMap.get(i).getY() == point.getY()){
+                mPointMap.remove(i);
+                invalidate();
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -529,6 +541,10 @@ public class MapView extends ImageView
      */
     public boolean onTouchEvent(MotionEvent ev)
     {
+        if(!mClickEnabled){
+            return false;
+        }
+
         int id;
 
         if (mVelocityTracker == null)
@@ -982,5 +998,13 @@ public class MapView extends ImageView
                 mCallbackList.remove(h);
             }
         }
+    }
+
+    public void disableClick(){
+        mClickEnabled = false;
+    }
+
+    public void enableClick(){
+        mClickEnabled = true;
     }
 }

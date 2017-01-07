@@ -13,8 +13,6 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -58,13 +56,13 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     private boolean mCanAddPoint = false;
     private Point mCurrentPoint = null;
     private TextView mText = null;
-    WifiManager mWifiManager;
-    WifiReceiver mReceiverWifi;
+    private WifiManager mWifiManager;
+    private WifiReceiver mReceiverWifi;
     private Button mButton = null;
     private EditText mRoom = null;
     private EditText mPointName = null;
     private boolean mReccording = false;
-    private Switch mSwitchBluetooh = null;
+    private Switch mSwitchBluetooth = null;
     private Switch mSwitchWifi = null;
     private Switch mSwitchMagneticField = null;
     private Spinner mSpinnerFloors = null;
@@ -90,14 +88,16 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
 
         //Menu
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        if(ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         // Widgets
         mText = (TextView) findViewById(R.id.text);
         mButton = (Button) findViewById(R.id.button);
         mRoom = (EditText) findViewById(R.id.room);
         mPointName = (EditText) findViewById(R.id.point_name);
-        mSwitchBluetooh = (Switch) findViewById(R.id.switchBlutetooth);
+        mSwitchBluetooth = (Switch) findViewById(R.id.switchBlutetooth);
         mSwitchWifi = (Switch) findViewById(R.id.switchWifi);
         mSwitchMagneticField = (Switch) findViewById(R.id.switchMagneticField);
         mSpinnerFloors = (Spinner) findViewById(R.id.spinnerFloors);
@@ -164,6 +164,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
             @Override
             public void onScreenTapped(float x, float y)
             {
+                mCurrentPoint = null;
                 if(mCanAddPoint) {
                     mCurrentPoint = mImageView.addPoint(x, y);
                 }
@@ -199,7 +200,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         unregisterReceiver(mReceiverWifi);
-        if(mReccording && mSwitchBluetooh.isChecked()) {
+        if(mReccording && mSwitchBluetooth.isChecked()) {
             mBeaconManager.stopRanging(mRegion);
         }
         if(mReccording && mSwitchMagneticField.isChecked()) {
@@ -213,7 +214,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     protected void onResume() {
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         SystemRequirementsChecker.checkWithDefaultDialogs(this);
-        if(mReccording && mSwitchBluetooh.isChecked()) {
+        if(mReccording && mSwitchBluetooth.isChecked()) {
             mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
         }
         if(mReccording && mSwitchMagneticField.isChecked()) {
@@ -262,11 +263,27 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     private void changeRecordingState()
     {
         mReccording = !mReccording;
+
         if(mReccording) {
+            if(mCurrentPoint == null){
+                Toast.makeText(this, "Veuillez sélectionner un point d'abord.", Toast.LENGTH_SHORT).show();
+                mReccording = false;
+                return;
+            }
+
+            if(!mSwitchWifi.isChecked() && !mSwitchBluetooth.isChecked() && !mSwitchMagneticField.isChecked()){
+                Toast.makeText(this, "Aucune technologie n'a été choisie!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+
+            //Prevent user to change point while reccording data
+            mImageView.disableClick();
+
             if(mSwitchWifi.isChecked()) {
                 doInback();
             }
-            if(mSwitchBluetooh.isChecked()) {
+            if(mSwitchBluetooth.isChecked()) {
                 mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
             }
             if(mSwitchMagneticField.isChecked()){
@@ -276,15 +293,16 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
             Toast.makeText(SaveFingerprintsActivity.this, "Enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
             mButton.setText(R.string.stop);
             // Disable switches
-            mSwitchBluetooh.setEnabled(false);
+            mSwitchBluetooth.setEnabled(false);
             mSwitchWifi.setEnabled(false);
             mSwitchMagneticField.setEnabled(false);
         }else{
+            mImageView.enableClick();
             // Enable switches
-            mSwitchBluetooh.setEnabled(true);
+            mSwitchBluetooth.setEnabled(true);
             mSwitchWifi.setEnabled(true);
             mSwitchMagneticField.setEnabled(true);
-            if(mSwitchBluetooh.isChecked()) {
+            if(mSwitchBluetooth.isChecked()) {
                 mBeaconManager.stopRanging(mRegion);
             }
             if(mSwitchMagneticField.isChecked()) {
@@ -331,10 +349,18 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
             case R.id.add_point:
 
                 mCanAddPoint = !mCanAddPoint;
+                if(mCanAddPoint){
+                    Toast.makeText(this, "Mode ajout de points", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(this, "Lecture de la carte seulement", Toast.LENGTH_SHORT).show();
+                }
 
                 break;
             case R.id.cancel:
-                Log.d("Menu", "CANCEL");
+                if(mCurrentPoint != null) {
+                    mImageView.removePoint(mCurrentPoint);
+                    mCurrentPoint= null;
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -408,7 +434,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     private void saveBluetoothFingerprints(List<Beacon> list)
     {
         StringBuilder wn = new StringBuilder("Scan Results:\n");
-        if (!list.isEmpty() && mReccording && mSwitchBluetooh.isChecked()) {
+        if (!list.isEmpty() && mReccording && mSwitchBluetooth.isChecked()) {
             try {
                 JSONObject data = new JSONObject();
                 JSONArray samples = new JSONArray();
