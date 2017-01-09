@@ -144,18 +144,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         mImageView.addOnMapViewClickedListener(new OnMapViewClickListener()
         {
             @Override
-            public void onImageMapClicked(int id, MapView imageMap)
-            {
-                // when the area is tapped, show the name in a
-            }
-
-            @Override
-            public void onBubbleClicked(int id)
-            {
-                // react to info bubble for area being tapped
-            }
-
-            @Override
             public void onPointSelected(Point point){
                 mCurrentPoint = point;
             }
