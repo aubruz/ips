@@ -1,8 +1,6 @@
 package com.mse.ips.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -24,6 +22,7 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
 import com.mse.ips.R;
+import com.mse.ips.lib.WifiReceiver;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -74,7 +73,8 @@ public class GetLocationActivity extends AppCompatActivity {
 
         // Initialization of Wifi
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        mReceiverWifi = new WifiReceiver();
+        mReceiverWifi = new WifiReceiver(mWifiManager);
+        mReceiverWifi.addOnReceiveWifiScanResult(this::sendWifiResults);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         if(!mWifiManager.isWifiEnabled())
         {
@@ -131,7 +131,7 @@ public class GetLocationActivity extends AppCompatActivity {
     private void find(){
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (mReceiverWifi == null) {
-            mReceiverWifi = new WifiReceiver();
+            mReceiverWifi = new WifiReceiver(mWifiManager);
         }
         mWifiManager.startScan();
     }
@@ -210,67 +210,60 @@ public class GetLocationActivity extends AppCompatActivity {
         mScanResults.setText(wn);
     }
 
-    class WifiReceiver extends BroadcastReceiver {
+    private void sendWifiResults(List<ScanResult> results){
+        mLastWifiScanResult = results;
+        StringBuilder wn = new StringBuilder("Scan Results:\n");
+        wn.append("-------------\n");
 
-        // This method call when number of wifi connections changed
-        public void onReceive(Context c, Intent intent) {
-
-            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                mLastWifiScanResult = mWifiManager.getScanResults();
-                StringBuilder wn = new StringBuilder("Scan Results:\n");
-                wn.append("-------------\n");
-
-                for (ScanResult result : mLastWifiScanResult) {
-                    String str = result.SSID + " " + result.level + " dBM " + result.BSSID + "\n";
-                    wn.append(str);
-
-                }
-                mScanResults.setText(wn);
-                // Send Wifi samples only if Wifi is the only option checked
-                // Otherwise the samples will be sent at the same time as the bluetooth ones
-                if(mFindingLocation && mSwitchWifi.isChecked() && !mSwitchBluetooh.isChecked()) {
-                    JSONObject data = new JSONObject();
-                    JSONArray samples = new JSONArray();
-                    JSONObject sample;
-                    try {
-                        for (ScanResult result : mLastWifiScanResult) {
-                            sample = new JSONObject();
-                            sample.put("rssi", result.level);
-                            sample.put("bssid", result.BSSID);
-                            samples.put(sample);
-                        }
-                        data.put("wifi", samples);
-
-                    }catch(JSONException e){
-                        e.printStackTrace();
-                    }
-
-                    //Send request to get current location
-                    AndroidNetworking.post("http://api.ukonectdev.com/v1/find/location")
-                        .addJSONObjectBody(data)
-                        .setPriority(Priority.MEDIUM)
-                        .build()
-                        .getAsJSONObject(new JSONObjectRequestListener() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                //mTextTest.setText(response.toString());
-                                try {
-                                    mRoomValue.setText(response.getString("room"));
-                                    mPointNameValue.setText(response.getString("point_name"));
-                                }catch(JSONException e){
-                                    e.printStackTrace();
-                                }
-                            }
-                            @Override
-                            public void onError(ANError error) {
-                                // handle error
-                                error.printStackTrace();
-                                //mTextTest.setText(error.toString());
-                            }
-                        });
-                }
-            }
+        for (ScanResult result : mLastWifiScanResult) {
+            String str = result.SSID + " " + result.level + " dBM " + result.BSSID + "\n";
+            wn.append(str);
         }
 
+        mScanResults.setText(wn);
+        // Send Wifi samples only if Wifi is the only option checked
+        // Otherwise the samples will be sent at the same time as the bluetooth ones
+        if(mFindingLocation && mSwitchWifi.isChecked() && !mSwitchBluetooh.isChecked()) {
+            JSONObject data = new JSONObject();
+            JSONArray samples = new JSONArray();
+            JSONObject sample;
+            try {
+                for (ScanResult result : mLastWifiScanResult) {
+                    sample = new JSONObject();
+                    sample.put("rssi", result.level);
+                    sample.put("bssid", result.BSSID);
+                    samples.put(sample);
+                }
+                data.put("wifi", samples);
+
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+
+            //Send request to get current location
+            AndroidNetworking.post("http://api.ukonectdev.com/v1/find/location")
+                .addJSONObjectBody(data)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        //mTextTest.setText(response.toString());
+                        try {
+                            mRoomValue.setText(response.getString("room"));
+                            mPointNameValue.setText(response.getString("point_name"));
+                        }catch(JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        // handle error
+                        error.printStackTrace();
+                        //mTextTest.setText(error.toString());
+                    }
+                }
+            );
+        }
     }
 }
