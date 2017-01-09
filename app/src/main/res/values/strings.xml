@@ -20,6 +20,6 @@
     <string name="refresh">Recharger les données</string>
     <string name="add_points">Ajouter des points</string>
     <string name="cancel">Annuler</string>
-    <string name="loading_buildings">Chargement des batiments...</string>
+    <string name="loading_buildings">Chargement des batiments&#8230;</string>
     <string name="loading_finished">Chargement terminé.</string>
 </resources>

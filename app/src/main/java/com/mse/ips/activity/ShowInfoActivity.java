@@ -1,8 +1,6 @@
 package com.mse.ips.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -25,11 +23,12 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
 import com.mse.ips.R;
+import com.mse.ips.lib.WifiReceiver;
 
 import java.util.List;
 import java.util.UUID;
 
-public class ShowInfoActivity extends AppCompatActivity {
+public class ShowInfoActivity extends AppCompatActivity{
     private RadioGroup mTechnologies = null;
     private RadioButton mRadioBtnWifi = null;
     private RadioButton mRadioBtnMagnetic = null;
@@ -67,10 +66,14 @@ public class ShowInfoActivity extends AppCompatActivity {
         mTechnologies = (RadioGroup) findViewById(R.id.radio_group_technology);
         mButton = (Button) findViewById(R.id.button);
         mButton.setOnClickListener(v -> changeRecordingState());
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 
         // Wifi initialization
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        mReceiverWifi = new WifiReceiver();
+        mReceiverWifi = new WifiReceiver(mWifiManager);
+        mReceiverWifi.addOnReceiveWifiScanResult(this::showWifiScanResults);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         if(!mWifiManager.isWifiEnabled())
         {
@@ -135,7 +138,7 @@ public class ShowInfoActivity extends AppCompatActivity {
                 //A_W[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
                 A_W[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
                 A_W[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
-                StringBuilder results = new StringBuilder("Scan Results:\n");
+                StringBuilder results = new StringBuilder("Résultats du scan:\n");
                 results.append("-------------\n");
                 results.append("x:");
                 results.append(magnetic[0]);
@@ -153,7 +156,7 @@ public class ShowInfoActivity extends AppCompatActivity {
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
+            // Auto-generated stub
         }
     };
 
@@ -205,14 +208,14 @@ public class ShowInfoActivity extends AppCompatActivity {
     private void scanWifi(){
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (mReceiverWifi == null) {
-            mReceiverWifi = new WifiReceiver();
+            mReceiverWifi = new WifiReceiver(mWifiManager);
         }
         mWifiManager.startScan();
     }
 
     private void showBluetoothResults(List<Beacon> list)
     {
-        StringBuilder results = new StringBuilder("Scan Results:\n");
+        StringBuilder results = new StringBuilder("Résultats du scan:\n");
         results.append("-------------\n");
         if (!list.isEmpty() && mIsReccording && mRadioBtnBluetooth.isChecked()) {
 
@@ -224,25 +227,16 @@ public class ShowInfoActivity extends AppCompatActivity {
         mScanResults.setText(results);
     }
 
-    class WifiReceiver extends BroadcastReceiver {
+    public void showWifiScanResults(List<ScanResult> scanResults){
+        StringBuilder results = new StringBuilder("Résultats du scan:\n");
+        results.append("-------------\n");
 
-        // This method call when number of wifi connections changed
-        public void onReceive(Context c, Intent intent) {
-
-            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                List<ScanResult> scanResults = mWifiManager.getScanResults();
-                StringBuilder results = new StringBuilder("Scan Results:\n");
-                results.append("-------------\n");
-
-                if(mIsReccording && mRadioBtnWifi.isChecked()) {
-                    for (ScanResult result : scanResults) {
-                        String str = result.SSID + " " + result.level + " dBM " + result.BSSID + "\n";
-                        results.append(str);
-                    }
-                }
-                mScanResults.setText(results);
+        if(mIsReccording && mRadioBtnWifi.isChecked()) {
+            for (ScanResult result : scanResults) {
+                String str = result.SSID + " " + result.level + " dBM " + result.BSSID + "\n";
+                results.append(str);
             }
         }
-
+        mScanResults.setText(results);
     }
 }

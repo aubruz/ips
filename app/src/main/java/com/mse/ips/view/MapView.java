@@ -983,20 +983,18 @@ public class MapView extends ImageView
     /*
      * on clicked handler add/remove support
      */
-    public void addOnMapViewClickedListener( OnMapViewClickListener h ) {
-        if (h != null) {
+    public void addOnMapViewClickedListener( OnMapViewClickListener handler ) {
+        if (handler != null) {
             if (mCallbackList == null) {
                 mCallbackList = new ArrayList<>();
             }
-            mCallbackList.add(h);
+            mCallbackList.add(handler);
         }
     }
 
-    public void removeOnMapViewClickedListener( OnMapViewClickListener h ) {
-        if (mCallbackList != null) {
-            if (h != null) {
-                mCallbackList.remove(h);
-            }
+    public void removeOnMapViewClickedListener( OnMapViewClickListener handler ) {
+        if (mCallbackList != null && handler != null) {
+            mCallbackList.remove(handler);
         }
     }
 

@@ -1,8 +1,6 @@
 package com.mse.ips.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -23,7 +21,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.net.wifi.WifiManager;
 
@@ -39,6 +36,7 @@ import com.mse.ips.R;
 import com.mse.ips.lib.GetBitmapFromUrlTask;
 import com.mse.ips.lib.Point;
 import com.mse.ips.lib.SpinnerItem;
+import com.mse.ips.lib.WifiReceiver;
 import com.mse.ips.listener.OnMapViewClickListener;
 import com.mse.ips.view.MapView;
 
@@ -50,12 +48,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class SaveFingerprintsActivity extends AppCompatActivity {
+public class SaveFingerprintsActivity extends AppCompatActivity{
     private MapView mImageView = null;
     private GetBitmapFromUrlTask mGetImageTask = null;
     private boolean mCanAddPoint = false;
     private Point mCurrentPoint = null;
-    private TextView mText = null;
     private WifiManager mWifiManager;
     private WifiReceiver mReceiverWifi;
     private Button mButton = null;
@@ -71,11 +68,12 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     private ArrayList<SpinnerItem> mBuildingsList = null;
     private ArrayAdapter<SpinnerItem> mFloorsAdapter = null;
     private ArrayAdapter<SpinnerItem> mBuildingsAdapter = null;
-    private float gravity[] = new float[3];
-    private float magnetic[] = new float[3];
+    private float mGravity[] = new float[3];
+    private float mMagnetic[] = new float[3];
     private SensorManager mSensorManager = null;
     private Sensor mMagneticField = null;
     private Sensor mAccelerometer = null;
+    float [] mNewBasis = null;
     private BeaconManager mBeaconManager;
     private Region mRegion;
     private final Handler mHandler = new Handler();
@@ -93,7 +91,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
         }
 
         // Widgets
-        mText = (TextView) findViewById(R.id.text);
         mButton = (Button) findViewById(R.id.button);
         mRoom = (EditText) findViewById(R.id.room);
         mPointName = (EditText) findViewById(R.id.point_name);
@@ -124,8 +121,10 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
 
         // Wifi initialization
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        mReceiverWifi = new WifiReceiver();
+        mReceiverWifi = new WifiReceiver(mWifiManager);
+        mReceiverWifi.addOnReceiveWifiScanResult(this::saveWifiScanResult);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
         if(!mWifiManager.isWifiEnabled())
         {
             mWifiManager.setWifiEnabled(true);
@@ -229,34 +228,31 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent event) {
             Sensor sensor = event.sensor;
             if (sensor.getType() == Sensor.TYPE_GRAVITY) {
-                gravity[0] = event.values[0];
-                gravity[1] = event.values[1];
-                gravity[2] = event.values[2];
-                //Log.d("Field","\nXX :"+gravity[0]+"\nYY :"+gravity[1]+"\nZZ :"+gravity[2]);
+                mGravity[0] = event.values[0];
+                mGravity[1] = event.values[1];
+                mGravity[2] = event.values[2];
             } else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
 
-                magnetic[0] = event.values[0];
-                magnetic[1] = event.values[1];
-                magnetic[2] = event.values[2];
+                mMagnetic[0] = event.values[0];
+                mMagnetic[1] = event.values[1];
+                mMagnetic[2] = event.values[2];
 
                 float[] R = new float[9];
                 float[] I = new float[9];
-                SensorManager.getRotationMatrix(R, I, gravity, magnetic);
+                SensorManager.getRotationMatrix(R, I, mGravity, mMagnetic);
                 float [] A_D = event.values.clone();
-                float [] A_W = new float[3];
+                mNewBasis = new float[3];
                 // We don't need to calculate A_W[0] because the value should be 0 or close
-                //A_W[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
-                A_W[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
-                A_W[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
-
-                //Log.d("Field","\nX :"+A_W[0]+"\nY :"+A_W[1]+"\nZ :"+A_W[2]);
+                //mNewBasis[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
+                mNewBasis[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
+                mNewBasis[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
 
             }
         }
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
+            // Auto generated stub
         }
     };
 
@@ -276,12 +272,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
                 return;
             }
 
-
             //Prevent user to change point while reccording data
             mImageView.disableClick();
 
             if(mSwitchWifi.isChecked()) {
-                doInback();
+                doWifiScanInBackground();
             }
             if(mSwitchBluetooth.isChecked()) {
                 mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
@@ -314,12 +309,12 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
         }
     }
 
-    public void doInback()
+    public void doWifiScanInBackground()
     {
         mHandler.postDelayed(() -> {
             if(mReccording && mSwitchWifi.isChecked()) {
                 scanWifi();
-                doInback();
+                doWifiScanInBackground();
             }
         }, 1000);
     }
@@ -327,7 +322,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     private void scanWifi(){
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (mReceiverWifi == null) {
-            mReceiverWifi = new WifiReceiver();
+            mReceiverWifi = new WifiReceiver(mWifiManager);
         }
         mWifiManager.startScan();
     }
@@ -335,7 +330,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
-        //R.menu.menu est l'id de notre menu
         inflater.inflate(R.menu.save_fingerprints, menu);
         return true;
     }
@@ -433,7 +427,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
 
     private void saveBluetoothFingerprints(List<Beacon> list)
     {
-        StringBuilder wn = new StringBuilder("Scan Results:\n");
         if (!list.isEmpty() && mReccording && mSwitchBluetooth.isChecked()) {
             try {
                 JSONObject data = new JSONObject();
@@ -441,9 +434,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
                 JSONObject sample;
 
                 for (Beacon result : list) {
-                    String str = result.getRssi() + " " + result.getMajor() + " dBM " + result.getMinor() + "\n";
-                    wn.append(str);
-
                     sample = new JSONObject();
                     sample.put("rssi", result.getRssi());
                     sample.put("uuid", result.getProximityUUID());
@@ -452,106 +442,78 @@ public class SaveFingerprintsActivity extends AppCompatActivity {
                     samples.put(sample);
                 }
 
-                data.put("location", mRoom.getText().toString());
-                data.put("point_name", mPointName.getText().toString());
-                data.put("technology", "bluetooth");
                 data.put("samples", samples);
-                SpinnerItem floor = (SpinnerItem) mSpinnerFloors.getSelectedItem();
+
                 //Send request to save the fingerprint
-                AndroidNetworking.post("http://api.ukonectdev.com/v1/floors/{floorID}/fingerprints")
-                    .addPathParameter("floorID", floor.getTag())
-                    .addJSONObjectBody(data)
-                    .setPriority(Priority.MEDIUM)
-                    .build()
-                    .getAsJSONObject(new JSONObjectRequestListener() {
-                         @Override
-                         public void onResponse(JSONObject response) {
-                             //mTextTest.setText(response.toString());
-                             Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
-                         }
-                         @Override
-                         public void onError(ANError error) {
-                             // handle error
-                             error.printStackTrace();
-                             //mTextTest.setText(error.toString());
-                         }
-                     }
-                );
+                sendFingerprints(data, "bluetooth");
 
             }catch(JSONException e){
                 e.printStackTrace();
             }
 
-        }else{
-            wn.append("nothing");
         }
-        mText.setText(wn);
     }
 
-    class WifiReceiver extends BroadcastReceiver {
+    public void saveWifiScanResult(List<ScanResult> scanResults){
+        if(mReccording && mSwitchWifi.isChecked()) {
+            JSONObject data = new JSONObject();
+            JSONArray samples = new JSONArray();
+            JSONObject sample;
 
-        // This method call when number of wifi connections changed
-        public void onReceive(Context c, Intent intent) {
-
-            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                List<ScanResult> scanResults = mWifiManager.getScanResults();
-                StringBuilder wn = new StringBuilder("Scan Results:\n");
-                wn.append("-------------\n");
-
-                //wn.append(mWifiManager.getConnectionInfo());
-
+            try {
                 for (ScanResult result : scanResults) {
-                    String str = result.SSID + " " + result.level + " dBM " + result.BSSID + "\n";
-                    wn.append(str);
+                    sample = new JSONObject();
+                    sample.put("rssi", result.level);
+                    sample.put("bssid", result.BSSID);
+                    samples.put(sample);
                 }
 
-                if(mReccording && mSwitchWifi.isChecked()) {
-                    mText.setText(wn);
-                    JSONObject data = new JSONObject();
-                    JSONArray samples = new JSONArray();
-                    JSONObject sample;
+                data.put("samples", samples);
 
-                    try {
-                        for (ScanResult result : scanResults) {
-                            sample = new JSONObject();
-                            sample.put("rssi", result.level);
-                            sample.put("bssid", result.BSSID);
-                            samples.put(sample);
-                        }
+                sendFingerprints(data, "wifi");
 
-                        data.put("location", mRoom.getText().toString());
-                        data.put("point_name", mPointName.getText().toString());
-                        data.put("technology", "wifi");
-                        data.put("samples", samples);
-
-                    }catch(JSONException e){
-                        e.printStackTrace();
-                    }
-
-                    SpinnerItem floor = (SpinnerItem) mSpinnerFloors.getSelectedItem();
-                    //Send request to save the fingerprint
-                    AndroidNetworking.post("http://api.ukonectdev.com/v1/floors/{floorID}/fingerprints")
-                        .addPathParameter("floorID", floor.getTag())
-                        .addJSONObjectBody(data)
-                        .setPriority(Priority.MEDIUM)
-                        .build()
-                        .getAsJSONObject(new JSONObjectRequestListener() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                //mTextTest.setText(response.toString());
-                                Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
-                            }
-                            @Override
-                            public void onError(ANError error) {
-                                // handle error
-                                error.printStackTrace();
-                                //mTextTest.setText(error.toString());
-                            }
-                        }
-                    );
-                }
+            }catch(JSONException e){
+                e.printStackTrace();
             }
         }
+    }
 
+    private void sendFingerprints(JSONObject data, String technology){
+        JSONObject point = new JSONObject();
+        try {
+            point.put("id", (mCurrentPoint == null) ? null : mCurrentPoint.getId());
+            point.put("location", mRoom.getText().toString());
+            point.put("name", mPointName.getText().toString());
+            point.put("x", mCurrentPoint.getX());
+            point.put("y", mCurrentPoint.getX());
+
+            data.put("technology", technology);
+            data.put("point", point);
+
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        SpinnerItem floor = (SpinnerItem) mSpinnerFloors.getSelectedItem();
+        AndroidNetworking.post("http://api.ukonectdev.com/v1/floors/{floorID}/fingerprints")
+            .addPathParameter("floorID", floor.getTag())
+            .addJSONObjectBody(data)
+            .setPriority(Priority.MEDIUM)
+            .build()
+            .getAsJSONObject(new JSONObjectRequestListener() {
+                @Override
+                public void onResponse(JSONObject response) {
+                     //mTextTest.setText(response.toString());
+                     Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(ANError error) {
+                    // handle error
+                    error.printStackTrace();
+                    //mTextTest.setText(error.toString());
+                }
+            }
+        );
     }
 }
