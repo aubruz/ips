@@ -503,15 +503,12 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
             .getAsJSONObject(new JSONObjectRequestListener() {
                 @Override
                 public void onResponse(JSONObject response) {
-                     //mTextTest.setText(response.toString());
                      Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void onError(ANError error) {
-                    // handle error
                     error.printStackTrace();
-                    //mTextTest.setText(error.toString());
                 }
             }
         );

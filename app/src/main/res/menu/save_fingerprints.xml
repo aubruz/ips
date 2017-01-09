@@ -5,7 +5,7 @@
 
     <item android:id="@id/add_point"
         android:title="@string/add_points"
-        android:icon="@android:drawable/ic_menu_add"
+        android:icon="@drawable/ic_add_point"
         android:showAsAction="ifRoom"
         tools:ignore="AppCompatResource"
         app:showAsAction="ifRoom" />
