@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ShowInfoActivity extends AppCompatActivity{
+    private int mIndex = 0;
     private RadioGroup mTechnologies = null;
     private RadioButton mRadioBtnWifi = null;
     private RadioButton mRadioBtnMagnetic = null;
@@ -124,33 +125,35 @@ public class ShowInfoActivity extends AppCompatActivity{
                 gravity[2] = event.values[2];
                 //Log.d("Field","\nXX :"+gravity[0]+"\nYY :"+gravity[1]+"\nZZ :"+gravity[2]);
             } else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+                if(mIndex % 5 == 0) { // Refresh every second
+                    magnetic[0] = event.values[0];
+                    magnetic[1] = event.values[1];
+                    magnetic[2] = event.values[2];
 
-                magnetic[0] = event.values[0];
-                magnetic[1] = event.values[1];
-                magnetic[2] = event.values[2];
-
-                float[] R = new float[9];
-                float[] I = new float[9];
-                SensorManager.getRotationMatrix(R, I, gravity, magnetic);
-                float [] A_D = event.values.clone();
-                float [] A_W = new float[3];
-                // We don't need to calculate A_W[0] because the value should be 0 or close
-                //A_W[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
-                A_W[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
-                A_W[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
-                StringBuilder results = new StringBuilder("Résultats du scan:\n");
-                results.append("-------------\n");
-                results.append("x:");
-                results.append(magnetic[0]);
-                results.append("\ny:");
-                results.append(magnetic[1]);
-                results.append("\nz:");
-                results.append(magnetic[2]);
-                results.append("\nNorth:");
-                results.append(A_W[1]);
-                results.append("\nSky:");
-                results.append(A_W[2]);
-                mScanResults.setText(results);
+                    float[] R = new float[9];
+                    float[] I = new float[9];
+                    SensorManager.getRotationMatrix(R, I, gravity, magnetic);
+                    float[] A_D = event.values.clone();
+                    float[] A_W = new float[3];
+                    // We don't need to calculate A_W[0] because the value should be 0 or close
+                    //A_W[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
+                    A_W[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
+                    A_W[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
+                    StringBuilder results = new StringBuilder("Résultats du scan:\n");
+                    results.append("-------------\n");
+                    results.append("x:");
+                    results.append(magnetic[0]);
+                    results.append("\ny:");
+                    results.append(magnetic[1]);
+                    results.append("\nz:");
+                    results.append(magnetic[2]);
+                    results.append("\nNorth:");
+                    results.append(A_W[1]);
+                    results.append("\nSky:");
+                    results.append(A_W[2]);
+                    mScanResults.setText(results);
+                }
+                mIndex = (mIndex +1) % 5;
             }
         }
 

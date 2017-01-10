@@ -6,6 +6,9 @@ import android.graphics.Paint;
 
 import com.mse.ips.listener.OnMapViewClickListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -14,6 +17,8 @@ import java.util.ArrayList;
 public class Point
 {
     private int mId = 0;
+    private String mLocation = null;
+    private String mName = null;
     private float mX;
     private float mY;
     private final float mRadius = 25.0f;
@@ -23,6 +28,15 @@ public class Point
     {
         mX = (x - scrollLeft) / resizeFactorX;
         mY = (y - scrollTop) / resizeFactorY;
+    }
+
+    public Point(float x, float y, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop, String location, String name)
+    {
+        mX = (x - scrollLeft) / resizeFactorX;
+        mY = (y - scrollTop) / resizeFactorY;
+        mName = name;
+        mLocation = location;
+
     }
 
     public void onDraw(Canvas canvas, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop, Paint textPaint)
@@ -83,5 +97,36 @@ public class Point
 
     public void deactivate(){
         this.mIsActive = false;
+    }
+
+    public String getLocation() {
+        return mLocation;
+    }
+
+    public void setLocation(String location) {
+        this.mLocation = location;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public void setName(String name) {
+        this.mName = name;
+    }
+
+    public JSONObject toJSONObject(){
+        JSONObject point = new JSONObject();
+        try {
+            point.put("id", this.mId);
+            point.put("location", this.mLocation);
+            point.put("name", this.mName);
+            point.put("x", this.mX);
+            point.put("y", this.mY);
+
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        return point;
     }
 }

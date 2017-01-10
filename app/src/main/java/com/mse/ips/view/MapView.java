@@ -148,10 +148,20 @@ public class MapView extends ImageView
         return p;
     }
 
+    public Point addPoint(float x, float y, String location, String name)
+    {
+        Point p = new Point(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop, location, name);
+        mPointMap.add(p);
+        return p;
+    }
+
     public boolean removePoint(Point point)
     {
         for(int i=0; i<mPointMap.size(); i++){
             if(mPointMap.get(i).getX() == point.getX() && mPointMap.get(i).getY() == point.getY()){
+                if(mPointMap.get(i).getId() != 0){
+                    //TODO remove the point from the server as well
+                }
                 mPointMap.remove(i);
                 invalidate();
                 return true;

@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -45,10 +46,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
 public class SaveFingerprintsActivity extends AppCompatActivity{
+    private Menu mMenu = null;
+    private int mIndex = 0;
     private MapView mImageView = null;
     private GetBitmapFromUrlTask mGetImageTask = null;
     private boolean mCanAddPoint = false;
@@ -64,6 +68,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     private Switch mSwitchMagneticField = null;
     private Spinner mSpinnerFloors = null;
     private Spinner mSpinnerBuildings = null;
+    private LinkedList<Point> mLastAddedPoints = null;
     private ArrayList<SpinnerItem> mFloorsList = null;
     private ArrayList<SpinnerItem> mBuildingsList = null;
     private ArrayAdapter<SpinnerItem> mFloorsAdapter = null;
@@ -89,6 +94,9 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         if(ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
         }
+
+        // Point list to enable revert option
+        mLastAddedPoints = new LinkedList<>();
 
         // Widgets
         mButton = (Button) findViewById(R.id.button);
@@ -145,7 +153,9 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         {
             @Override
             public void onPointSelected(Point point){
-                mCurrentPoint = point;
+                if(!mReccording) {
+                    mCurrentPoint = point;
+                }
             }
 
             @Override
@@ -154,6 +164,9 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 mCurrentPoint = null;
                 if(mCanAddPoint) {
                     mCurrentPoint = mImageView.addPoint(x, y);
+                    mLastAddedPoints.push(mCurrentPoint);
+                    mMenu.findItem(R.id.cancel).setIcon(R.drawable.ic_menu_revert_active);
+                    mMenu.findItem(R.id.cancel).setEnabled(true);
                 }
             }
         });
@@ -211,38 +224,74 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         super.onResume();
     }
 
-    final SensorEventListener mSensorEventListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            Sensor sensor = event.sensor;
-            if (sensor.getType() == Sensor.TYPE_GRAVITY) {
-                mGravity[0] = event.values[0];
-                mGravity[1] = event.values[1];
-                mGravity[2] = event.values[2];
-            } else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.save_fingerprints, menu);
+        mMenu = menu;
+        return true;
+    }
 
-                mMagnetic[0] = event.values[0];
-                mMagnetic[1] = event.values[1];
-                mMagnetic[2] = event.values[2];
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case  R.id.refresh:
+                // Refresh buildings list
+                getBuildings();
+                break;
+            case R.id.add_point:
+                toggleEditMode();
+                break;
+            case R.id.cancel:
+                if(mLastAddedPoints.size() != 0) {
+                    Point lastPointAdded = mLastAddedPoints.pop();
+                    if (lastPointAdded != null) {
+                        if (lastPointAdded == mCurrentPoint) {
+                            mCurrentPoint = null;
+                        }
+                        if(mCurrentPoint == null){
+                            Log.d("Current point", "null");
+                        }
+                        mImageView.removePoint(lastPointAdded);
+                    }
+                }
+                if(mLastAddedPoints.size() == 0){
+                    mMenu.findItem(R.id.cancel).setEnabled(false);
+                    mMenu.findItem(R.id.cancel).setIcon(R.drawable.ic_menu_revert_inactive);
+                }
 
-                float[] R = new float[9];
-                float[] I = new float[9];
-                SensorManager.getRotationMatrix(R, I, mGravity, mMagnetic);
-                float [] A_D = event.values.clone();
-                mNewBasis = new float[3];
-                // We don't need to calculate A_W[0] because the value should be 0 or close
-                //mNewBasis[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
-                mNewBasis[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
-                mNewBasis[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
-
-            }
+                break;
         }
+        return super.onOptionsItemSelected(item);
+    }
 
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // Auto generated stub
+    private void toggleEditMode(){
+        mCanAddPoint = !mCanAddPoint;
+        if(mCanAddPoint){
+            enableEditMode();
+        }else{
+            disableEditMode();
         }
-    };
+    }
+
+    private void enableEditMode(){
+        MenuItem item = mMenu.findItem(R.id.add_point);
+        item.setIcon(R.drawable.ic_add_point_active);
+        Toast.makeText(this, "Mode ajout de points", Toast.LENGTH_SHORT).show();
+        if(mLastAddedPoints.size() != 0){
+            mMenu.findItem(R.id.cancel).setEnabled(true);
+            mMenu.findItem(R.id.cancel).setIcon(R.drawable.ic_menu_revert_active);
+        }
+    }
+
+    private void disableEditMode() {
+        MenuItem item = mMenu.findItem(R.id.add_point);
+        item.setIcon(R.drawable.ic_add_point);
+        Toast.makeText(this, "Lecture de la carte seulement", Toast.LENGTH_SHORT).show();
+        mMenu.findItem(R.id.cancel).setEnabled(false);
+        mMenu.findItem(R.id.cancel).setIcon(R.drawable.ic_menu_revert_inactive);
+    }
 
     private void changeRecordingState()
     {
@@ -259,6 +308,13 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 Toast.makeText(this, "Aucune technologie n'a été choisie!", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            if(mCanAddPoint){
+                disableEditMode();
+            }
+
+            mCurrentPoint.setLocation(mRoom.getText().toString());
+            mCurrentPoint.setName(mPointName.getText().toString());
 
             //Prevent user to change point while reccording data
             mImageView.disableClick();
@@ -313,39 +369,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
             mReceiverWifi = new WifiReceiver(mWifiManager);
         }
         mWifiManager.startScan();
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.save_fingerprints, menu);
-        return true;
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case  R.id.refresh:
-                // Refresh buildings list
-                getBuildings();
-                break;
-            case R.id.add_point:
-
-                mCanAddPoint = !mCanAddPoint;
-                if(mCanAddPoint){
-                    Toast.makeText(this, "Mode ajout de points", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(this, "Lecture de la carte seulement", Toast.LENGTH_SHORT).show();
-                }
-
-                break;
-            case R.id.cancel:
-                if(mCurrentPoint != null) {
-                    mImageView.removePoint(mCurrentPoint);
-                    mCurrentPoint= null;
-                }
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void getBuildings(){
@@ -413,6 +436,62 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         );
     }
 
+    final SensorEventListener mSensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            Sensor sensor = event.sensor;
+            if(mReccording && mSwitchMagneticField.isChecked()) {
+
+                if (sensor.getType() == Sensor.TYPE_GRAVITY) {
+                    mGravity[0] = event.values[0];
+                    mGravity[1] = event.values[1];
+                    mGravity[2] = event.values[2];
+                } else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+
+                    mMagnetic[0] = event.values[0];
+                    mMagnetic[1] = event.values[1];
+                    mMagnetic[2] = event.values[2];
+
+                    float[] R = new float[9];
+                    float[] I = new float[9];
+                    SensorManager.getRotationMatrix(R, I, mGravity, mMagnetic);
+                    float[] A_D = event.values.clone();
+                    mNewBasis = new float[3];
+                    // We don't need to calculate A_W[0] because the value should be 0 or close
+                    //mNewBasis[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
+                    mNewBasis[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
+                    mNewBasis[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
+
+                    if (mIndex % 5 == 0) { // Refresh every second
+                        JSONObject data = new JSONObject();
+                        JSONObject samples = new JSONObject();
+
+                        try {
+                            samples.put("x", mMagnetic[0]);
+                            samples.put("y", mMagnetic[1]);
+                            samples.put("z", mMagnetic[2]);
+                            samples.put("north", mNewBasis[1]);
+                            samples.put("sky", mNewBasis[2]);
+
+                            data.put("samples", samples);
+
+                            sendFingerprints(data, "magnetic");
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mIndex = (mIndex + 1) % 5;
+                }
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            // Auto generated stub
+        }
+    };
+
     private void saveBluetoothFingerprints(List<Beacon> list)
     {
         if (!list.isEmpty() && mReccording && mSwitchBluetooth.isChecked()) {
@@ -467,16 +546,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     }
 
     private void sendFingerprints(JSONObject data, String technology){
-        JSONObject point = new JSONObject();
         try {
-            point.put("id", (mCurrentPoint == null) ? null : mCurrentPoint.getId());
-            point.put("location", mRoom.getText().toString());
-            point.put("name", mPointName.getText().toString());
-            point.put("x", mCurrentPoint.getX());
-            point.put("y", mCurrentPoint.getX());
-
             data.put("technology", technology);
-            data.put("point", point);
+            if(mCurrentPoint != null) {
+                data.put("point", mCurrentPoint.toJSONObject());
+            }
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -491,6 +565,14 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
             .getAsJSONObject(new JSONObjectRequestListener() {
                 @Override
                 public void onResponse(JSONObject response) {
+                    try {
+                        JSONObject point = response.getJSONObject("point");
+
+                        mCurrentPoint.setId(point.getInt("id"));
+
+                    }catch(JSONException e){
+                        e.printStackTrace();
+                    }
                      Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
                 }
 

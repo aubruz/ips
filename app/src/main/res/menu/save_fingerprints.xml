@@ -12,7 +12,8 @@
 
     <item android:id="@id/cancel"
         android:title="@string/cancel"
-        android:icon="@android:drawable/ic_menu_revert"
+        android:icon="@drawable/ic_menu_revert_inactive"
+        android:enabled="false"
         android:showAsAction="ifRoom"
         app:showAsAction="always"
         tools:ignore="AppCompatResource" />
