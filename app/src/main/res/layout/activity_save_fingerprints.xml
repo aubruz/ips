@@ -42,14 +42,16 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true" >
 
         <TextView
             android:text="@string/room_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/room_label"
-            android:labelFor="@+id/room"  />
+            android:labelFor="@+id/room" />
 
         <EditText
             android:layout_width="match_parent"

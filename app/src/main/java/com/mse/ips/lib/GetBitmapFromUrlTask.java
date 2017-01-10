@@ -32,8 +32,10 @@ public class GetBitmapFromUrlTask extends AsyncTask<String, Void, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {
-        for (OnBitmapRetrievedListener bl : mListeners) {
-            bl.onImageRetrieved(bitmap);
+        if(bitmap != null) {
+            for (OnBitmapRetrievedListener bl : mListeners) {
+                bl.onImageRetrieved(bitmap);
+            }
         }
     }
 

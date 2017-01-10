@@ -172,31 +172,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         });
     }
 
-    AdapterView.OnItemSelectedListener OnSelectionListener =  new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            SpinnerItem item;
-            switch (parent.getId()) {
-                case R.id.spinnerBuildings:
-                    item = (SpinnerItem) parent.getItemAtPosition(position);
-                    getFloorsFromBuildingId(item.getTag());
-                    //Toast.makeText(parent.getContext(), item.getName() + " " + item.getTag(), Toast.LENGTH_SHORT).show();
-                    break;
-                case R.id.spinnerFloors:
-                    item = (SpinnerItem) parent.getItemAtPosition(position);
-                    mGetImageTask = new GetBitmapFromUrlTask();
-                    mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/"+item.getTag());
-                    mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
-                    break;
-            }
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            //
-        }
-    };
-
     @Override
     protected void onPause() {
         unregisterReceiver(mReceiverWifi);
@@ -238,6 +213,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         switch(item.getItemId()) {
             case  R.id.refresh:
                 // Refresh buildings list
+                disableEditMode();
                 getBuildings();
                 break;
             case R.id.add_point:
@@ -267,18 +243,19 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     }
 
     private void toggleEditMode(){
-        mCanAddPoint = !mCanAddPoint;
-        if(mCanAddPoint){
+        if(!mCanAddPoint){
             enableEditMode();
+            Toast.makeText(this, "Mode ajout de points", Toast.LENGTH_SHORT).show();
         }else{
             disableEditMode();
+            Toast.makeText(this, "Lecture de la carte seulement", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void enableEditMode(){
+        mCanAddPoint = true;
         MenuItem item = mMenu.findItem(R.id.add_point);
         item.setIcon(R.drawable.ic_add_point_active);
-        Toast.makeText(this, "Mode ajout de points", Toast.LENGTH_SHORT).show();
         if(mLastAddedPoints.size() != 0){
             mMenu.findItem(R.id.cancel).setEnabled(true);
             mMenu.findItem(R.id.cancel).setIcon(R.drawable.ic_menu_revert_active);
@@ -286,11 +263,120 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     }
 
     private void disableEditMode() {
+        mCanAddPoint = false;
         MenuItem item = mMenu.findItem(R.id.add_point);
         item.setIcon(R.drawable.ic_add_point);
-        Toast.makeText(this, "Lecture de la carte seulement", Toast.LENGTH_SHORT).show();
         mMenu.findItem(R.id.cancel).setEnabled(false);
         mMenu.findItem(R.id.cancel).setIcon(R.drawable.ic_menu_revert_inactive);
+    }
+
+    AdapterView.OnItemSelectedListener OnSelectionListener =  new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            SpinnerItem item = (SpinnerItem) parent.getItemAtPosition(position);
+            switch (parent.getId()) {
+                case R.id.spinnerBuildings:
+                    disableEditMode();
+                    getFloorsFromBuildingId(item.getTag());
+                    //Toast.makeText(parent.getContext(), item.getName() + " " + item.getTag(), Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.spinnerFloors:
+                    disableEditMode();
+                    loadBlueprint(item.getTag());
+                    break;
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            //
+        }
+    };
+
+    private void loadBlueprint(String floorId){
+        mGetImageTask = new GetBitmapFromUrlTask();
+        mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/"+floorId);
+        mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
+
+        AndroidNetworking.get("http://api.ukonectdev.com/v1/floors/{floor}/points")
+            .addPathParameter("floor", floorId)
+            .setPriority(Priority.MEDIUM)
+            .build()
+            .getAsJSONObject(new JSONObjectRequestListener() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try{
+                        JSONArray points = (JSONArray) response.get("points");
+                        mImageView.loadPointsFromJSON(points);
+                        mLastAddedPoints.clear();
+                    }catch (JSONException e){
+                        e.printStackTrace();
+                    }
+                }
+                @Override
+                public void onError(ANError error) {
+                    error.printStackTrace();
+                }
+            });
+    }
+
+    private void getBuildings(){
+        Toast.makeText(this, R.string.loading_buildings, Toast.LENGTH_SHORT).show();
+        AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings")
+        .setPriority(Priority.MEDIUM)
+        .build()
+        .getAsJSONObject(new JSONObjectRequestListener() {
+            @Override
+            public void onResponse(JSONObject response) {
+                //Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
+                try{
+                    mBuildingsList.clear();
+                    JSONArray buildings = (JSONArray) response.get("buildings");
+                    for (int i = 0; i < buildings.length(); i++) {
+                        JSONObject row = buildings.getJSONObject(i);
+                        mBuildingsList.add(new SpinnerItem(row.getString("name"), row.getString("id")));
+                    }
+                    mBuildingsAdapter.notifyDataSetChanged();
+                    Toast.makeText(SaveFingerprintsActivity.this, R.string.loading_finished, Toast.LENGTH_SHORT).show();
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void onError(ANError error) {
+                error.printStackTrace();
+            }
+        });
+    }
+
+    private void getFloorsFromBuildingId(String buildingId){
+        AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings/{buildingID}/floors")
+            .addPathParameter("buildingID", buildingId)
+            .setPriority(Priority.MEDIUM)
+            .build()
+            .getAsJSONObject(new JSONObjectRequestListener() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    //Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
+                    try{
+                        mFloorsList.clear();
+                        JSONArray buildings = (JSONArray) response.get("floors");
+                        for (int i = 0; i < buildings.length(); i++) {
+                            JSONObject row = buildings.getJSONObject(i);
+                            mFloorsList.add(new SpinnerItem(row.getString("name"), row.getString("id")));
+                        }
+                        mFloorsAdapter.notifyDataSetChanged();
+                        loadBlueprint(mFloorsList.get(0).getTag());
+                    }catch (JSONException e){
+                        e.printStackTrace();
+                    }
+                }
+                @Override
+                public void onError(ANError error) {
+                    error.printStackTrace();
+                }
+            }
+        );
     }
 
     private void changeRecordingState()
@@ -369,71 +455,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
             mReceiverWifi = new WifiReceiver(mWifiManager);
         }
         mWifiManager.startScan();
-    }
-
-    private void getBuildings(){
-        Toast.makeText(this, R.string.loading_buildings, Toast.LENGTH_SHORT).show();
-        AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings")
-            .setPriority(Priority.MEDIUM)
-            .build()
-            .getAsJSONObject(new JSONObjectRequestListener() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    //Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
-                    try{
-                        mBuildingsList.clear();
-                        JSONArray buildings = (JSONArray) response.get("buildings");
-                        for (int i = 0; i < buildings.length(); i++) {
-                            JSONObject row = buildings.getJSONObject(i);
-                            mBuildingsList.add(new SpinnerItem(row.getString("name"), row.getString("id")));
-                        }
-                        mBuildingsAdapter.notifyDataSetChanged();
-                        Toast.makeText(SaveFingerprintsActivity.this, R.string.loading_finished, Toast.LENGTH_SHORT).show();
-                    }catch (JSONException e){
-                        e.printStackTrace();
-                    }
-
-                }
-                @Override
-                public void onError(ANError error) {
-                    // handle error
-                    error.printStackTrace();
-                    //mTextTest.setText(error.toString());
-                }
-            }
-        );
-    }
-
-    private void getFloorsFromBuildingId(String buildingId){
-        AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings/{buildingID}/floors")
-            .addPathParameter("buildingID", buildingId)
-            .setPriority(Priority.MEDIUM)
-            .build()
-            .getAsJSONObject(new JSONObjectRequestListener() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    //Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
-                    try{
-                        mFloorsList.clear();
-                        JSONArray buildings = (JSONArray) response.get("floors");
-                        for (int i = 0; i < buildings.length(); i++) {
-                            JSONObject row = buildings.getJSONObject(i);
-                            mFloorsList.add(new SpinnerItem(row.getString("name"), row.getString("id")));
-                        }
-                        mFloorsAdapter.notifyDataSetChanged();
-                    }catch (JSONException e){
-                        e.printStackTrace();
-                    }
-
-                }
-                @Override
-                public void onError(ANError error) {
-                    // handle error
-                    error.printStackTrace();
-                    //mTextTest.setText(error.toString());
-                }
-            }
-        );
     }
 
     final SensorEventListener mSensorEventListener = new SensorEventListener() {
@@ -579,6 +600,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 @Override
                 public void onError(ANError error) {
                     error.printStackTrace();
+                    if(error.getErrorCode() == 404){
+                        Toast.makeText(SaveFingerprintsActivity.this, "Erreur 404", Toast.LENGTH_SHORT).show();
+                    }
+                    Log.d("error", error.getErrorBody());
+                    Log.d("Int", String.valueOf(error.getErrorCode()));
                 }
             }
         );

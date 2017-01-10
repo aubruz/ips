@@ -30,13 +30,14 @@ public class Point
         mY = (y - scrollTop) / resizeFactorY;
     }
 
-    public Point(float x, float y, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop, String location, String name)
+    public Point(float x, float y, String location, String name, int id)
     {
-        mX = (x - scrollLeft) / resizeFactorX;
-        mY = (y - scrollTop) / resizeFactorY;
+        mX = x;
+        mY = y;
         mName = name;
         mLocation = location;
-
+        mId = id;
+        mIsActive = false;
     }
 
     public void onDraw(Canvas canvas, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop, Paint textPaint)
@@ -54,20 +55,7 @@ public class Point
         float dx = Math.abs(x - mX);
         float dy = Math.abs(y - mY);
 
-        if (dx + dy <= mRadius){
-            return true;
-        }
-        if(dx > mRadius) {
-            return false;
-        }
-        if(dy > mRadius){
-            return false;
-        }
-        if( Math.pow(dx,2) +  Math.pow(dy,2) <= Math.pow(mRadius,2) ) {
-            return true;
-        }
-
-        return false;
+        return dx + dy <= mRadius || dx <= mRadius && dy <= mRadius && Math.pow(dx, 2) + Math.pow(dy, 2) <= Math.pow(mRadius, 2);
     }
 
     public void onSelected(ArrayList<OnMapViewClickListener> callbackList) {
@@ -118,11 +106,11 @@ public class Point
     public JSONObject toJSONObject(){
         JSONObject point = new JSONObject();
         try {
-            point.put("id", this.mId);
-            point.put("location", this.mLocation);
-            point.put("name", this.mName);
-            point.put("x", this.mX);
-            point.put("y", this.mY);
+            point.put("id", this.getId());
+            point.put("location", this.getLocation());
+            point.put("name", this.getName());
+            point.put("x", this.getX());
+            point.put("y", this.getY());
 
         }catch (JSONException e){
             e.printStackTrace();

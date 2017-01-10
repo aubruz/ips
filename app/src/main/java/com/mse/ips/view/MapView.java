@@ -21,6 +21,10 @@ import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +36,7 @@ public class MapView extends ImageView
     //           image size will likely be larger than screen
 
     // by default, this is true
-    private boolean mFitImageToScreen=true;
+    private boolean mFitImageToScreen=false;
 
     // For certain images, it is best to always resize using the original
     // image bits. This requires keeping the original image in memory along with the
@@ -42,7 +46,7 @@ public class MapView extends ImageView
     // does not blur or loose quality, set mScaleFromOriginal to false
 
     // by default, this is false
-    private boolean mScaleFromOriginal=false;
+    private boolean mScaleFromOriginal=true;
 
     private float mMaxSize = 1.5f;
     private final float MAXZOOM = 5.0f;
@@ -117,7 +121,7 @@ public class MapView extends ImageView
     ArrayList<OnMapViewClickListener> mCallbackList;
 
     // list of points
-    List<Point> mPointMap = new ArrayList<>();
+    List<Point> mPointsList = new ArrayList<>();
 
     // accounting for screen density
     protected float densityFactor;
@@ -144,31 +148,43 @@ public class MapView extends ImageView
     public Point addPoint(float x, float y)
     {
         Point p = new Point(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
-        mPointMap.add(p);
+        mPointsList.add(p);
         return p;
     }
 
-    public Point addPoint(float x, float y, String location, String name)
+    public Point addPoint(float x, float y, String location, String name, int id)
     {
-        Point p = new Point(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop, location, name);
-        mPointMap.add(p);
+        Point p = new Point(x, y, location, name, id);
+        mPointsList.add(p);
         return p;
     }
 
     public boolean removePoint(Point point)
     {
-        for(int i=0; i<mPointMap.size(); i++){
-            if(mPointMap.get(i).getX() == point.getX() && mPointMap.get(i).getY() == point.getY()){
-                if(mPointMap.get(i).getId() != 0){
+        for(int i=0; i<mPointsList.size(); i++){
+            if(mPointsList.get(i).getX() == point.getX() && mPointsList.get(i).getY() == point.getY()){
+                if(mPointsList.get(i).getId() != 0){
                     //TODO remove the point from the server as well
                 }
-                mPointMap.remove(i);
+                mPointsList.remove(i);
                 invalidate();
                 return true;
             }
         }
         return false;
     }
+
+    public void loadPointsFromJSON(JSONArray points){
+        mPointsList.clear();
+        try {
+            for (int i = 0; i < points.length(); i++) {
+                JSONObject point = points.getJSONObject(i);
+                addPoint((float)point.getDouble("x"), (float)point.getDouble("y"), point.getString("location"), point.getString("name"), point.getInt("id"));
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }   
 
 
     /**
@@ -225,6 +241,10 @@ public class MapView extends ImageView
         mImageHeight = mImage.getHeight();
         mImageWidth = mImage.getWidth();
         mAspect = (float)mImageWidth / mImageHeight;
+        mMinWidth=-1;
+        mMinHeight=-1;
+        mMaxWidth=-1;
+        mMaxHeight=-1;
         setInitialImageBounds();
     }
 
@@ -334,6 +354,7 @@ public class MapView extends ImageView
         {
             setInitialImageBoundsFillScreen();
         }
+        invalidate();
     }
 
     /**
@@ -515,10 +536,10 @@ public class MapView extends ImageView
 
     protected void drawPoints(Canvas canvas)
     {
-        for (Point p: mPointMap)
+        for (Point p: mPointsList)
         {
-            /*int key = mPointMap.keyAt(i);
-            Point p = mPointMap.get(key);
+            /*int key = mPointsList.keyAt(i);
+            Point p = mPointsList.get(key);
             if (p != null)
             {*/
             p.onDraw(canvas, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop, textPaint);
@@ -900,11 +921,11 @@ public class MapView extends ImageView
     {
         boolean missed = true;
 
-        for (int i = 0; i<mPointMap.size(); i++)
+        for (int i = 0; i<mPointsList.size(); i++)
         {
-            Point p = mPointMap.get(i);
-            /*int key = mPointMap.keyAt(i);
-            Point p = mPointMap.get(key);
+            Point p = mPointsList.get(i);
+            /*int key = mPointsList.keyAt(i);
+            Point p = mPointsList.get(key);
             if (p != null)
             {*/
             p.deactivate();
