@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_get_location"
     android:layout_width="match_parent"
@@ -8,101 +8,120 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.mse.ips.activity.GetLocationActivity">
+    tools:context="com.mse.ips.activity.GetLocationActivity"
+    android:orientation="vertical">
 
-    <TextView
-        android:text="@string/btn_label_find_location"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/search_position_text"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_height="match_parent"
+        android:layout_weight="60"
+        android:orientation="horizontal">
 
-    <Switch
-        android:text="@string/bluetooth"
-        android:theme="@style/SCBSwitch"
+        <com.mse.ips.view.MapView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/search_position_text"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="18dp"
-        android:id="@+id/switchBlutetooth" />
+        android:layout_height="match_parent"
+        android:layout_weight="40"
+        android:layout_marginTop="16dp">
 
-    <Switch
-        android:text="@string/wifi"
-        android:theme="@style/SCBSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/switchBlutetooth"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="16dp"
-        android:id="@+id/switchWifi"
-        android:checked="true" />
-
-    <Button
-        android:text="@string/start"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/btn_start_stop_find_location"
-        android:layout_marginTop="24dp"
-        android:layout_below="@+id/switchWifi"
-        android:layout_alignParentStart="true" />
-
-    <RelativeLayout
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginTop="18dp"
-        android:id="@+id/point_name_layout"
-        android:layout_below="@+id/room_layout"
-        android:layout_alignParentStart="true">
-
-        <TextView
-            android:text="@string/point_name_label"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/point_name_text"/>
+            android:orientation="vertical"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true" >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/point_name_value"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            tools:ignore="RelativeOverlap,RtlHardcoded" />
+            <TextView
+                android:text="@string/btn_label_find_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/search_position_text" />
 
-    </RelativeLayout>
+            <Switch
+                android:text="@string/bluetooth"
+                android:theme="@style/SCBSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:id="@+id/switchBlutetooth" />
 
-    <RelativeLayout
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginTop="18dp"
-        android:id="@+id/room_layout"
-        android:layout_below="@+id/btn_start_stop_find_location"
-        android:layout_alignParentStart="true">
+            <Switch
+                android:text="@string/wifi"
+                android:theme="@style/SCBSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:id="@+id/switchWifi"
+                android:checked="true" />
 
-        <TextView
-            android:text="@string/room_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/room_label"/>
+            <Switch
+                android:text="@string/magnetic_field"
+                android:theme="@style/SCBSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:id="@+id/switchMagneticField" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/room_value"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            tools:ignore="RelativeOverlap,RtlHardcoded" />
+            <Button
+                android:text="@string/start"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_start_stop_find_location"
+                android:layout_marginTop="24dp" />
 
-    </RelativeLayout>
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal"
+                android:id="@+id/point_name_layout">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/point_name_layout"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="33dp"
-        android:id="@+id/text_scan_results" />
+                <TextView
+                    android:text="@string/point_name_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="60"
+                    android:id="@+id/point_name_text"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/point_name_value"
+                    android:layout_weight="40"
+                    tools:ignore="RelativeOverlap,RtlHardcoded" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_marginTop="18dp"
+
+                android:id="@+id/room_layout">
+
+                <TextView
+                    android:text="@string/room_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="60"
+                    android:id="@+id/room_label"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/room_value"
+                    android:layout_weight="40"
+                    tools:ignore="RelativeOverlap,RtlHardcoded" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 
-</RelativeLayout>
+</LinearLayout>

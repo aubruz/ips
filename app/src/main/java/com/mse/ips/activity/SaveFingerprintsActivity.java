@@ -62,12 +62,14 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     private Button mButton = null;
     private EditText mRoom = null;
     private EditText mPointName = null;
-    private boolean mReccording = false;
+    private boolean mIsReccording = false;
     private Switch mSwitchBluetooth = null;
     private Switch mSwitchWifi = null;
     private Switch mSwitchMagneticField = null;
     private Spinner mSpinnerFloors = null;
     private Spinner mSpinnerBuildings = null;
+    private List<ScanResult> mLastWifiScanResult = null;
+    private List<Beacon> mLastBluetoothScanResult = null;
     private LinkedList<Point> mLastAddedPoints = null;
     private ArrayList<SpinnerItem> mFloorsList = null;
     private ArrayList<SpinnerItem> mBuildingsList = null;
@@ -148,12 +150,18 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         mImageView = (MapView) findViewById(R.id.imageView);
         mGetImageTask = new GetBitmapFromUrlTask();
         mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/43284381");
-        mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
+        mGetImageTask.addOnBitmapRetrievedListener(bitmap -> {
+            if(bitmap != null) {
+                mImageView.setImageBitmap(bitmap);
+            }else{
+                Toast.makeText(SaveFingerprintsActivity.this, "Il n'y a pas de plan pour cet étage!", Toast.LENGTH_SHORT).show();
+            }
+        });
         mImageView.addOnMapViewClickedListener(new OnMapViewClickListener()
         {
             @Override
             public void onPointSelected(Point point){
-                if(!mReccording) {
+                if(!mIsReccording) {
                     mCurrentPoint = point;
                 }
             }
@@ -175,10 +183,10 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     @Override
     protected void onPause() {
         unregisterReceiver(mReceiverWifi);
-        if(mReccording && mSwitchBluetooth.isChecked()) {
+        if(mIsReccording && mSwitchBluetooth.isChecked()) {
             mBeaconManager.stopRanging(mRegion);
         }
-        if(mReccording && mSwitchMagneticField.isChecked()) {
+        if(mIsReccording && mSwitchMagneticField.isChecked()) {
             mSensorManager.unregisterListener(mSensorEventListener, mMagneticField);
             mSensorManager.unregisterListener(mSensorEventListener, mAccelerometer);
         }
@@ -189,10 +197,10 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     protected void onResume() {
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         SystemRequirementsChecker.checkWithDefaultDialogs(this);
-        if(mReccording && mSwitchBluetooth.isChecked()) {
+        if(mIsReccording && mSwitchBluetooth.isChecked()) {
             mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
         }
-        if(mReccording && mSwitchMagneticField.isChecked()) {
+        if(mIsReccording && mSwitchMagneticField.isChecked()) {
             mSensorManager.registerListener(mSensorEventListener, mMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
             mSensorManager.registerListener(mSensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
@@ -381,12 +389,12 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
 
     private void changeRecordingState()
     {
-        mReccording = !mReccording;
+        mIsReccording = !mIsReccording;
 
-        if(mReccording) {
+        if(mIsReccording) {
             if(mCurrentPoint == null){
                 Toast.makeText(this, "Veuillez sélectionner un point d'abord.", Toast.LENGTH_SHORT).show();
-                mReccording = false;
+                mIsReccording = false;
                 return;
             }
 
@@ -442,7 +450,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     public void doWifiScanInBackground()
     {
         mHandler.postDelayed(() -> {
-            if(mReccording && mSwitchWifi.isChecked()) {
+            if(mIsReccording && mSwitchWifi.isChecked()) {
                 scanWifi();
                 doWifiScanInBackground();
             }
@@ -457,11 +465,28 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         mWifiManager.startScan();
     }
 
+    public void saveWifiScanResult(List<ScanResult> scanResults){
+        if(mIsReccording && mSwitchWifi.isChecked() && !scanResults.isEmpty()) {
+            mLastWifiScanResult = scanResults;
+            sendFingerprints();
+        }
+    }
+
+    private void saveBluetoothFingerprints(List<Beacon> list)
+    {
+        if (!list.isEmpty() && mIsReccording && mSwitchBluetooth.isChecked()) {
+            mLastBluetoothScanResult = list;
+            if(!mSwitchWifi.isChecked()) {
+                sendFingerprints();
+            }
+        }
+    }
+
     final SensorEventListener mSensorEventListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
             Sensor sensor = event.sensor;
-            if(mReccording && mSwitchMagneticField.isChecked()) {
+            if(mIsReccording && mSwitchMagneticField.isChecked()) {
 
                 if (sensor.getType() == Sensor.TYPE_GRAVITY) {
                     mGravity[0] = event.values[0];
@@ -484,22 +509,8 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                     mNewBasis[2] = R[6] * A_D[0] + R[7] * A_D[1] + R[8] * A_D[2];
 
                     if (mIndex % 5 == 0) { // Refresh every second
-                        JSONObject data = new JSONObject();
-                        JSONObject samples = new JSONObject();
-
-                        try {
-                            samples.put("x", mMagnetic[0]);
-                            samples.put("y", mMagnetic[1]);
-                            samples.put("z", mMagnetic[2]);
-                            samples.put("north", mNewBasis[1]);
-                            samples.put("sky", mNewBasis[2]);
-
-                            data.put("samples", samples);
-
-                            sendFingerprints(data, "magnetic");
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        if(!mSwitchWifi.isChecked() && !mSwitchBluetooth.isChecked()) {
+                            sendFingerprints();
                         }
                     }
                     mIndex = (mIndex + 1) % 5;
@@ -513,15 +524,25 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         }
     };
 
-    private void saveBluetoothFingerprints(List<Beacon> list)
-    {
-        if (!list.isEmpty() && mReccording && mSwitchBluetooth.isChecked()) {
-            try {
-                JSONObject data = new JSONObject();
-                JSONArray samples = new JSONArray();
-                JSONObject sample;
-
-                for (Beacon result : list) {
+    private void sendFingerprints(){
+        JSONObject data = new JSONObject();
+        JSONArray samples = new JSONArray();
+        JSONObject sample;
+        try {
+            // WIFI
+            if(mSwitchWifi.isChecked()) {
+                for (ScanResult result : mLastWifiScanResult) {
+                    sample = new JSONObject();
+                    sample.put("rssi", result.level);
+                    sample.put("bssid", result.BSSID);
+                    samples.put(sample);
+                }
+                data.put("wifi", samples);
+            }
+            // Bluetooth
+            if(mSwitchBluetooth.isChecked()) {
+                samples = new JSONArray();
+                for (Beacon result : mLastBluetoothScanResult) {
                     sample = new JSONObject();
                     sample.put("rssi", result.getRssi());
                     sample.put("uuid", result.getProximityUUID());
@@ -529,46 +550,19 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                     sample.put("minor", result.getMinor());
                     samples.put(sample);
                 }
-
-                data.put("samples", samples);
-
-                //Send request to save the fingerprint
-                sendFingerprints(data, "bluetooth");
-
-            }catch(JSONException e){
-                e.printStackTrace();
+                data.put("bluetooth", samples);
             }
-
-        }
-    }
-
-    public void saveWifiScanResult(List<ScanResult> scanResults){
-        if(mReccording && mSwitchWifi.isChecked()) {
-            JSONObject data = new JSONObject();
-            JSONArray samples = new JSONArray();
-            JSONObject sample;
-
-            try {
-                for (ScanResult result : scanResults) {
-                    sample = new JSONObject();
-                    sample.put("rssi", result.level);
-                    sample.put("bssid", result.BSSID);
-                    samples.put(sample);
-                }
-
-                data.put("samples", samples);
-
-                sendFingerprints(data, "wifi");
-
-            }catch(JSONException e){
-                e.printStackTrace();
+            // Magnetic field
+            if(mSwitchMagneticField.isChecked()) {
+                sample = new JSONObject();
+                sample.put("x", mMagnetic[0]);
+                sample.put("y", mMagnetic[1]);
+                sample.put("z", mMagnetic[2]);
+                sample.put("north", mNewBasis[1]);
+                sample.put("sky", mNewBasis[2]);
+                data.put("magnetic", sample);
             }
-        }
-    }
-
-    private void sendFingerprints(JSONObject data, String technology){
-        try {
-            data.put("technology", technology);
+            // Current point
             if(mCurrentPoint != null) {
                 data.put("point", mCurrentPoint.toJSONObject());
             }
@@ -599,12 +593,9 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
 
                 @Override
                 public void onError(ANError error) {
-                    error.printStackTrace();
                     if(error.getErrorCode() == 404){
-                        Toast.makeText(SaveFingerprintsActivity.this, "Erreur 404", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SaveFingerprintsActivity.this, "Erreur " + error.getErrorCode(), Toast.LENGTH_SHORT).show();
                     }
-                    Log.d("error", error.getErrorBody());
-                    Log.d("Int", String.valueOf(error.getErrorCode()));
                 }
             }
         );

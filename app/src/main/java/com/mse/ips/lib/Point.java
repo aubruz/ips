@@ -40,6 +40,18 @@ public class Point
         mIsActive = false;
     }
 
+    public Point(JSONObject point) {
+        try {
+            this.mId = point.getInt("id");
+            this.mName = point.getString("name");
+            this.mLocation = point.getString("location");
+            this.mX = (float) point.getDouble("x");
+            this.mY = (float) point.getDouble("y");
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
     public void onDraw(Canvas canvas, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop, Paint textPaint)
     {
         if(mIsActive){

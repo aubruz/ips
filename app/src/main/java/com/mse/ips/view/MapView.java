@@ -145,6 +145,12 @@ public class MapView extends ImageView
         init();
     }
 
+    public Point addPoint(Point p)
+    {
+        mPointsList.add(p);
+        return p;
+    }
+
     public Point addPoint(float x, float y)
     {
         Point p = new Point(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop);
@@ -157,6 +163,10 @@ public class MapView extends ImageView
         Point p = new Point(x, y, location, name, id);
         mPointsList.add(p);
         return p;
+    }
+
+    public void clearPoints(){
+        mPointsList.clear();
     }
 
     public boolean removePoint(Point point)

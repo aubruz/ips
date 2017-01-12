@@ -3,6 +3,7 @@ package com.mse.ips.lib;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import com.mse.ips.listener.OnBitmapRetrievedListener;
 
@@ -32,10 +33,8 @@ public class GetBitmapFromUrlTask extends AsyncTask<String, Void, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {
-        if(bitmap != null) {
-            for (OnBitmapRetrievedListener bl : mListeners) {
-                bl.onImageRetrieved(bitmap);
-            }
+        for (OnBitmapRetrievedListener bl : mListeners) {
+            bl.onImageRetrieved(bitmap);
         }
     }
 
