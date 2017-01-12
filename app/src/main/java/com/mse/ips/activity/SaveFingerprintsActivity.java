@@ -591,7 +591,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                         e.printStackTrace();
                     }
                     mNumberOfFingerprintsTaken ++;
-                    Toast.makeText(SaveFingerprintsActivity.this, mNumberOfFingerprintsTaken + " empreinte prises", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SaveFingerprintsActivity.this, mNumberOfFingerprintsTaken + " empreinte(s) prise(s)", Toast.LENGTH_SHORT).show();
                     if(mNumberOfFingerprintsTaken >= 10){
                         changeRecordingState();
                         // IF the point name is an integer, we increment it
