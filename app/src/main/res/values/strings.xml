@@ -3,8 +3,8 @@
     <string name="home_text">Choisissez une action</string>
     <string name="stop">STOP</string>
     <string name="start">START</string>
-    <string name="default_room">422</string>
-    <string name="default_point_name">9</string>
+    <string name="default_room">424</string>
+    <string name="default_point_name">1</string>
     <string name="room_label">Salle</string>
     <string name="point_name_label">Nom du point</string>
     <string name="btn_label_find_location">Trouver ma position</string>
