@@ -49,7 +49,7 @@ public class MapView extends ImageView
     private boolean mScaleFromOriginal=true;
 
     private float mMaxSize = 1.5f;
-    private final float MAXZOOM = 5.0f;
+    private final float MAXZOOM = 7.0f;
 
     /* Touch event handling variables */
     private VelocityTracker mVelocityTracker;
@@ -934,16 +934,11 @@ public class MapView extends ImageView
         for (int i = 0; i<mPointsList.size(); i++)
         {
             Point p = mPointsList.get(i);
-            /*int key = mPointsList.keyAt(i);
-            Point p = mPointsList.get(key);
-            if (p != null)
-            {*/
             p.deactivate();
-            if(missed && p.isTouched((x - mScrollLeft) / mResizeFactorX, (y - mScrollTop) / mResizeFactorY)){
+            if(missed && p.isTouched(x, y, mResizeFactorX, mResizeFactorY, mScrollLeft, mScrollTop)){
                 p.onSelected(mCallbackList);
                 missed=false;
             }
-            //}
         }
 
         invalidate();

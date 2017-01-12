@@ -84,6 +84,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     private BeaconManager mBeaconManager;
     private Region mRegion;
     private final Handler mHandler = new Handler();
+    private int mNumberOfFingerprintsTaken;
 
 
     @Override
@@ -154,7 +155,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
             if(bitmap != null) {
                 mImageView.setImageBitmap(bitmap);
             }else{
-                Toast.makeText(SaveFingerprintsActivity.this, "Il n'y a pas de plan pour cet étage!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SaveFingerprintsActivity.this, "Il n'y a pas de plan pour cet étage, veuillez un charger un!", Toast.LENGTH_SHORT).show();
             }
         });
         mImageView.addOnMapViewClickedListener(new OnMapViewClickListener()
@@ -233,9 +234,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                     if (lastPointAdded != null) {
                         if (lastPointAdded == mCurrentPoint) {
                             mCurrentPoint = null;
-                        }
-                        if(mCurrentPoint == null){
-                            Log.d("Current point", "null");
                         }
                         mImageView.removePoint(lastPointAdded);
                     }
@@ -331,6 +329,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     private void getBuildings(){
         Toast.makeText(this, R.string.loading_buildings, Toast.LENGTH_SHORT).show();
         AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings")
+            .addHeaders("accept", "application/json")
         .setPriority(Priority.MEDIUM)
         .build()
         .getAsJSONObject(new JSONObjectRequestListener() {
@@ -360,6 +359,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     private void getFloorsFromBuildingId(String buildingId){
         AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings/{buildingID}/floors")
             .addPathParameter("buildingID", buildingId)
+            .addHeaders("accept", "application/json")
             .setPriority(Priority.MEDIUM)
             .build()
             .getAsJSONObject(new JSONObjectRequestListener() {
@@ -424,6 +424,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 mSensorManager.registerListener(mSensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
             }
             Toast.makeText(SaveFingerprintsActivity.this, "Enregistrement des empreintes" , Toast.LENGTH_SHORT).show();
+            mNumberOfFingerprintsTaken = 0;
             mButton.setText(R.string.stop);
             // Disable switches
             mSwitchBluetooth.setEnabled(false);
@@ -575,6 +576,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         AndroidNetworking.post("http://api.ukonectdev.com/v1/floors/{floorID}/fingerprints")
             .addPathParameter("floorID", floor.getTag())
             .addJSONObjectBody(data)
+            .addHeaders("accept", "application/json")
             .setPriority(Priority.MEDIUM)
             .build()
             .getAsJSONObject(new JSONObjectRequestListener() {
@@ -588,7 +590,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                     }catch(JSONException e){
                         e.printStackTrace();
                     }
-                     Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
+                    mNumberOfFingerprintsTaken ++;
+                    Toast.makeText(SaveFingerprintsActivity.this, mNumberOfFingerprintsTaken + " empreinte prises", Toast.LENGTH_SHORT).show();
+                    if(mNumberOfFingerprintsTaken >= 10){
+                        changeRecordingState();
+                    }
                 }
 
                 @Override

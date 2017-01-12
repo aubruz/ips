@@ -266,9 +266,7 @@ public class GetLocationActivity extends AppCompatActivity {
         try {
             // Add current point
             if(mCurrentPoint != null){
-                JSONObject point = new JSONObject();
-                point.put("id", mCurrentPoint.getId());
-                data.put("point", point);
+                data.put("point", mCurrentPoint.toJSONObject());
             }
 
             //Wifi
@@ -314,6 +312,7 @@ public class GetLocationActivity extends AppCompatActivity {
         AndroidNetworking.post("http://api.ukonectdev.com/v1/find/location")
             .addJSONObjectBody(data)
             .setPriority(Priority.MEDIUM)
+            .addHeaders("accept", "application/json")
             .build()
             .getAsJSONObject(new JSONObjectRequestListener() {
                 @Override
@@ -346,6 +345,7 @@ public class GetLocationActivity extends AppCompatActivity {
                     if(error.getErrorCode() == 404){
                         mImageView.clearPoints();
                         Toast.makeText(GetLocationActivity.this, "Position introuvable.", Toast.LENGTH_SHORT).show();
+                        Log.d("error", error.getErrorBody());
                     }else {
                         error.printStackTrace();
                         Log.d("error", error.getErrorBody());

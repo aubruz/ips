@@ -63,11 +63,11 @@ public class Point
 
     }
 
-    public boolean isTouched(float x, float y) {
-        float dx = Math.abs(x - mX);
-        float dy = Math.abs(y - mY);
+    public boolean isTouched(int x, int y, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop) {
+        float dx = Math.abs(x - (mX * resizeFactorX + scrollLeft));
+        float dy = Math.abs(y - (mY * resizeFactorY + scrollTop));
 
-        return dx + dy <= mRadius || dx <= mRadius && dy <= mRadius && Math.pow(dx, 2) + Math.pow(dy, 2) <= Math.pow(mRadius, 2);
+        return dx <= mRadius && dy <= mRadius && Math.pow(dx, 2) + Math.pow(dy, 2) <= Math.pow(mRadius, 2);
     }
 
     public void onSelected(ArrayList<OnMapViewClickListener> callbackList) {
