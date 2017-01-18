@@ -167,6 +167,7 @@ public class MapView extends ImageView
 
     public void clearPoints(){
         mPointsList.clear();
+        invalidate();
     }
 
     public boolean removePoint(Point point)

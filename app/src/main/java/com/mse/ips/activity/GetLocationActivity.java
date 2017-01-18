@@ -63,7 +63,7 @@ public class GetLocationActivity extends AppCompatActivity {
     private SensorManager mSensorManager = null;
     private Sensor mMagneticField = null;
     private Sensor mAccelerometer = null;
-    private float [] mNewBasis = null;
+    private float [] mNewBasis = new float[3];;
     private Building mCurrentBuilding = null;
     private Floor mCurrentFloor = null;
     private Point mCurrentPoint  = null;
@@ -172,9 +172,28 @@ public class GetLocationActivity extends AppCompatActivity {
             if(mSwitchBluetooth.isChecked()) {
                 mBeaconManager.connect(() -> mBeaconManager.startRanging(mRegion));
             }
+            if(mSwitchMagneticField.isChecked()){
+                mSensorManager.registerListener(mSensorEventListener, mMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
+                mSensorManager.registerListener(mSensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            }
+
             Toast.makeText(GetLocationActivity.this, "Recherche de la localisation en cours" , Toast.LENGTH_SHORT).show();
             mStartStopButton.setText(R.string.stop);
+
+            mSwitchWifi.setEnabled(false);
+            mSwitchBluetooth.setEnabled(false);
+            mSwitchMagneticField.setEnabled(false);
         }else{
+            if(mSwitchBluetooth.isChecked()) {
+                mBeaconManager.stopRanging(mRegion);
+            }
+            if(mSwitchMagneticField.isChecked()) {
+                mSensorManager.unregisterListener(mSensorEventListener, mMagneticField);
+                mSensorManager.unregisterListener(mSensorEventListener, mAccelerometer);
+            }
+            mSwitchWifi.setEnabled(true);
+            mSwitchBluetooth.setEnabled(true);
+            mSwitchMagneticField.setEnabled(true);
             Toast.makeText(GetLocationActivity.this, "Arrêt de la recherche" , Toast.LENGTH_SHORT).show();
             mStartStopButton.setText(R.string.start);
         }
@@ -237,7 +256,7 @@ public class GetLocationActivity extends AppCompatActivity {
                     float[] I = new float[9];
                     SensorManager.getRotationMatrix(R, I, mGravity, mMagnetic);
                     float[] A_D = event.values.clone();
-                    mNewBasis = new float[3];
+
                     // We don't need to calculate A_W[0] because the value should be 0 or close
                     //mNewBasis[0] = R[0] * A_D[0] + R[1] * A_D[1] + R[2] * A_D[2];
                     mNewBasis[1] = R[3] * A_D[0] + R[4] * A_D[1] + R[5] * A_D[2];
@@ -270,7 +289,7 @@ public class GetLocationActivity extends AppCompatActivity {
             }
 
             //Wifi
-            if(mSwitchWifi.isChecked()) {
+            if(mSwitchWifi.isChecked() && mLastWifiScanResult != null) {
                 for (ScanResult result : mLastWifiScanResult) {
                     sample = new JSONObject();
                     sample.put("rssi", result.level);
@@ -280,7 +299,7 @@ public class GetLocationActivity extends AppCompatActivity {
                 data.put("wifi", samples);
             }
             // Bluetooth
-            if(mSwitchBluetooth.isChecked()){
+            if(mSwitchBluetooth.isChecked() && mLastBluetoothScanResult != null){
                 samples = new JSONArray();
                 for (Beacon result : mLastBluetoothScanResult) {
                     sample = new JSONObject();
@@ -293,7 +312,8 @@ public class GetLocationActivity extends AppCompatActivity {
                 data.put("bluetooth", samples);
             }
             // Magnetic field
-            if(mSwitchMagneticField.isChecked()) {
+            if(mSwitchMagneticField.isChecked() && mMagnetic != null && mNewBasis != null) {
+                Log.d("x", String.valueOf(mMagnetic[0]));
                 sample = new JSONObject();
                 sample.put("x", mMagnetic[0]);
                 sample.put("y", mMagnetic[1]);
@@ -319,19 +339,27 @@ public class GetLocationActivity extends AppCompatActivity {
                 public void onResponse(JSONObject response) {
 
                     try {
-
                         if(mCurrentFloor == null || mCurrentFloor.getId() != response.getJSONObject("floor").getInt("id")){
                             mCurrentBuilding = new Building(response.getJSONObject("building"));
                             mCurrentFloor = new Floor(response.getJSONObject("floor"));
 
-                            Toast.makeText(GetLocationActivity.this, "Position found in " + mCurrentBuilding.getName(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(GetLocationActivity.this, "Position trouvée à " + mCurrentBuilding.getName() + "\n Chargement du plan.", Toast.LENGTH_SHORT).show();
+                            mGetImageTask = new GetBitmapFromUrlTask();
                             mGetImageTask.execute(mCurrentFloor.getBlueprint());
+                            mGetImageTask.addOnBitmapRetrievedListener(bitmap -> {
+                                if(bitmap != null) {
+                                    mImageView.setImageBitmap(bitmap);
+                                }else{
+                                    Toast.makeText(GetLocationActivity.this, "Il n'y a pas de plan pour cet étage!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
 
                         // Update position on the map
                         mCurrentPoint = new Point(response.getJSONObject("point"));
 
                         mImageView.clearPoints();
+
                         mImageView.addPoint(mCurrentPoint);
 
                         mRoomValue.setText(mCurrentPoint.getLocation());

@@ -531,7 +531,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         JSONObject sample;
         try {
             // WIFI
-            if(mSwitchWifi.isChecked()) {
+            if(mSwitchWifi.isChecked() && mLastWifiScanResult != null) {
                 for (ScanResult result : mLastWifiScanResult) {
                     sample = new JSONObject();
                     sample.put("rssi", result.level);
@@ -541,7 +541,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 data.put("wifi", samples);
             }
             // Bluetooth
-            if(mSwitchBluetooth.isChecked()) {
+            if(mSwitchBluetooth.isChecked() && mLastBluetoothScanResult != null) {
                 samples = new JSONArray();
                 for (Beacon result : mLastBluetoothScanResult) {
                     sample = new JSONObject();
@@ -554,7 +554,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 data.put("bluetooth", samples);
             }
             // Magnetic field
-            if(mSwitchMagneticField.isChecked()) {
+            if(mSwitchMagneticField.isChecked() && mMagnetic != null && mNewBasis != null) {
                 sample = new JSONObject();
                 sample.put("x", mMagnetic[0]);
                 sample.put("y", mMagnetic[1]);

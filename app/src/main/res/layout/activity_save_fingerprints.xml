@@ -46,93 +46,144 @@
             android:descendantFocusability="beforeDescendants"
             android:focusableInTouchMode="true" >
 
-        <TextView
-            android:text="@string/room_label"
-            android:layout_width="match_parent"
+        <LinearLayout
             android:layout_height="wrap_content"
-            android:id="@+id/room_label"
-            android:labelFor="@+id/room" />
+            android:layout_width="match_parent"
+            android:orientation="horizontal" >
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:ems="10"
-            android:id="@+id/room"
-            android:text="@string/default_room" />
-
-        <TextView
-            android:text="@string/point_name_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/point_name_label"
-            android:labelFor="@+id/point_name"
-            android:layout_marginTop="16dp" />
+            <TextView
+                android:text="@string/room_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="75"
+                android:id="@+id/room_label"
+                android:labelFor="@+id/room" />
 
             <EditText
+                android:layout_width="match_parent"
+                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:layout_weight="25"
+                android:inputType="text"
+                android:ems="10"
+                android:id="@+id/room"
+                android:text="@string/default_room" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp" >
+
+            <TextView
+                android:text="@string/point_name_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="75"
+                android:id="@+id/point_name_label"
+                android:labelFor="@+id/point_name" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:layout_weight="25"
+                android:inputType="text"
+                android:ems="10"
+                android:id="@+id/point_name"
+                android:text="@string/default_point_name"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp" >
+
+            <TextView
+                android:text="@string/building_spinner_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="75"
+                android:id="@+id/building_spinner_label"
+                android:labelFor="@+id/spinnerBuildings"
+                android:layout_marginTop="16dp" />
+
+            <Spinner
+                android:id="@+id/spinnerBuildings"
+                android:layout_width="match_parent"
+                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:layout_weight="25" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp" >
+
+            <TextView
+                android:text="@string/floor_spinner_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="75"
+                android:id="@+id/floor_spinner_label"
+                android:labelFor="@+id/spinnerFloors"
+                android:layout_marginTop="16dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFloors"
+                android:layout_width="match_parent"
+                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:layout_weight="25" />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:ems="10"
-            android:id="@+id/point_name"
-            android:text="@string/default_point_name"/>
+            android:orientation="horizontal" >
 
-        <TextView
-            android:text="@string/building_spinner_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/building_spinner_label"
-            android:labelFor="@+id/spinnerBuildings"
-            android:layout_marginTop="16dp" />
+            <CheckBox
+                android:text="@string/bluetooth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:layout_weight="33"
+                android:id="@+id/switchBlutetooth" />
 
-        <Spinner
-            android:id="@+id/spinnerBuildings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            <CheckBox
+                android:text="@string/wifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="33"
+                android:layout_marginTop="18dp"
+                android:id="@+id/switchWifi"
+                android:checked="true"/>
 
-        <TextView
-            android:text="@string/floor_spinner_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/floor_spinner_label"
-            android:labelFor="@+id/spinnerFloors"
-            android:layout_marginTop="16dp" />
+            <CheckBox
+                android:text="@string/magnetic_field"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="33"
+                android:layout_marginTop="18dp"
+                android:id="@+id/switchMagneticField" />
 
-        <Spinner
-            android:id="@+id/spinnerFloors"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <Switch
-            android:text="@string/bluetooth"
-            android:theme="@style/SCBSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:id="@+id/switchBlutetooth" />
-
-        <Switch
-            android:text="@string/wifi"
-            android:theme="@style/SCBSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:id="@+id/switchWifi"
-            android:checked="true" />
-
-        <Switch
-            android:text="@string/magnetic_field"
-            android:theme="@style/SCBSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:id="@+id/switchMagneticField" />
+        </LinearLayout>
 
         <Button
             android:text="@string/start"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/button"
+            android:background="@color/highligth"
+            android:textColor="@color/white"
             android:layout_marginTop="27dp" />
         </LinearLayout>
 

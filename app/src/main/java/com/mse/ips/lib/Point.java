@@ -129,4 +129,9 @@ public class Point
         }
         return point;
     }
+
+    @Override
+    public String toString(){
+        return "Id: " + this.mId + "\n x: "+ this.mX + "\n y: " + this.mY;
+    }
 }

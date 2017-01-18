@@ -43,35 +43,44 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/search_position_text" />
 
-            <Switch
-                android:text="@string/bluetooth"
-                android:theme="@style/SCBSwitch"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:id="@+id/switchBlutetooth" />
+                android:orientation="horizontal" >
 
-            <Switch
-                android:text="@string/wifi"
-                android:theme="@style/SCBSwitch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:id="@+id/switchWifi"
-                android:checked="true" />
+                <CheckBox
+                    android:text="@string/bluetooth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:layout_weight="33"
+                    android:id="@+id/switchBlutetooth" />
 
-            <Switch
-                android:text="@string/magnetic_field"
-                android:theme="@style/SCBSwitch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:id="@+id/switchMagneticField" />
+                <CheckBox
+                    android:text="@string/wifi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="33"
+                    android:layout_marginTop="18dp"
+                    android:id="@+id/switchWifi"
+                    android:checked="true"/>
+
+                <CheckBox
+                    android:text="@string/magnetic_field"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="33"
+                    android:layout_marginTop="18dp"
+                    android:id="@+id/switchMagneticField" />
+
+            </LinearLayout>
 
             <Button
                 android:text="@string/start"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/highligth"
+                android:textColor="@color/white"
                 android:id="@+id/btn_start_stop_find_location"
                 android:layout_marginTop="24dp" />
 
