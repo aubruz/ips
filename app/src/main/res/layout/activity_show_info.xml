@@ -46,6 +46,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/button"
+        android:background="@color/highligth"
+        android:textColor="@color/white"
         android:layout_marginTop="27dp" />
 
     <ScrollView

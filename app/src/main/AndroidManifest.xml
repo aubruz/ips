@@ -17,7 +17,6 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,32 +26,34 @@
         </activity>
 
         <!-- Childs of the main activity -->
-        <activity android:name=".activity.SaveFingerprintsActivity"
-            android:parentActivityName=".activity.MainActivity" >
+        <activity
+            android:name=".activity.SaveFingerprintsActivity"
+            android:parentActivityName=".activity.MainActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-
-        <activity android:name=".activity.GetLocationActivity"
-            android:parentActivityName=".activity.MainActivity" >
-
-            <!-- Parent activity meta-data to support 4.0 and lower -->
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MainActivity" />
-        </activity>
-
-        <activity android:name=".activity.ShowInfoActivity"
-            android:parentActivityName=".activity.MainActivity" >
+        <activity
+            android:name=".activity.GetLocationActivity"
+            android:parentActivityName=".activity.MainActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
+        <activity
+            android:name=".activity.ShowInfoActivity"
+            android:parentActivityName=".activity.MainActivity">
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
+        <activity android:name=".activity.ComputePrecision"></activity>
     </application>
 
 </manifest>
