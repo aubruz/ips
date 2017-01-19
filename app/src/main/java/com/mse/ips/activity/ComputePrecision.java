@@ -52,6 +52,7 @@ public class ComputePrecision extends AppCompatActivity {
     private int mIndex = 0;
     private Point mPredictedPoint = null;
     private Button mStartStopButton = null;
+    private Button mResetButton = null;
     private TextView mAveragePrecision = null;
     private TextView mStandartDeviation = null;
     private ArrayList<Float> mDistances = new ArrayList<>();
@@ -64,8 +65,8 @@ public class ComputePrecision extends AppCompatActivity {
     private BeaconManager mBeaconManager;
     private Region mRegion;
     private final Handler handler = new Handler();
-    WifiManager mWifiManager;
-    WifiReceiver mReceiverWifi;
+    private WifiManager mWifiManager;
+    private WifiReceiver mReceiverWifi;
     private float mGravity[] = new float[3];
     private float mMagnetic[] = new float[3];
     private SensorManager mSensorManager = null;
@@ -74,7 +75,6 @@ public class ComputePrecision extends AppCompatActivity {
     private float [] mNewBasis = new float[3];
     private Floor mCurrentFloor = null;
     private MapView mImageView = null;
-    private GetBitmapFromUrlTask mGetImageTask = null;
     private Point mCurrentPosition = null;
     private Spinner mSpinnerFloors = null;
     private Spinner mSpinnerBuildings = null;
@@ -101,7 +101,9 @@ public class ComputePrecision extends AppCompatActivity {
         mCheckboxWifi = (CheckBox) findViewById(R.id.switchWifi);
         mCheckboxMagneticField = (CheckBox) findViewById(R.id.switchMagneticField);
         mStartStopButton = (Button) findViewById(R.id.btn_start_stop_find_location);
+        mResetButton = (Button) findViewById(R.id.btn_reset);
         mStartStopButton.setOnClickListener(v -> startStopFindLocation());
+        mResetButton.setOnClickListener(v -> resetData());
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
@@ -208,7 +210,7 @@ public class ComputePrecision extends AppCompatActivity {
     };
 
     private void loadBlueprint(int floorId){
-        mGetImageTask = new GetBitmapFromUrlTask();
+        GetBitmapFromUrlTask mGetImageTask = new GetBitmapFromUrlTask();
         mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/"+floorId);
         mGetImageTask.addOnBitmapRetrievedListener(bitmap -> {
             if(bitmap != null) {
@@ -219,24 +221,24 @@ public class ComputePrecision extends AppCompatActivity {
         });
 
         AndroidNetworking.get("http://api.ukonectdev.com/v1/floors/{floor}/points")
-                .addPathParameter("floor", String.valueOf(floorId))
-                .setPriority(Priority.MEDIUM)
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try{
-                            JSONArray points = (JSONArray) response.get("points");
-                            mImageView.loadPointsFromJSON(points);
-                        }catch (JSONException e){
-                            e.printStackTrace();
-                        }
+            .addPathParameter("floor", String.valueOf(floorId))
+            .setPriority(Priority.MEDIUM)
+            .build()
+            .getAsJSONObject(new JSONObjectRequestListener() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try{
+                        JSONArray points = (JSONArray) response.get("points");
+                        mImageView.loadPointsFromJSON(points);
+                    }catch (JSONException e){
+                        e.printStackTrace();
                     }
-                    @Override
-                    public void onError(ANError error) {
-                        error.printStackTrace();
-                    }
-                });
+                }
+                @Override
+                public void onError(ANError error) {
+                    error.printStackTrace();
+                }
+            });
     }
 
     private void getBuildings(){
@@ -349,6 +351,12 @@ public class ComputePrecision extends AppCompatActivity {
             Toast.makeText(ComputePrecision.this, "Arrêt de la recherche" , Toast.LENGTH_SHORT).show();
             mStartStopButton.setText(R.string.start);
         }
+    }
+
+    public void resetData(){
+        mDistances.clear();
+        mAveragePrecision.setText("0");
+        mStandartDeviation.setText("0");
     }
 
     public void doInback()

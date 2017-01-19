@@ -56,13 +56,19 @@
         <activity
             android:name=".activity.ComputePrecision"
             android:parentActivityName=".activity.MainActivity">
-
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-        <activity android:name=".activity.ComputeAttenuation"></activity>
+        <activity
+            android:name=".activity.ComputeAttenuation"
+            android:parentActivityName=".activity.MainActivity">
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

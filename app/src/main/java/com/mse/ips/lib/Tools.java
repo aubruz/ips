@@ -37,17 +37,6 @@ public abstract class Tools {
         return mBeaconsIdx.get(String.valueOf(major));
     }
 
-    public static ArrayList<String> getBeaconsList(List<Beacon> list, ArrayList<String> beaconsList){
-        beaconsList.clear();
-
-        for (Beacon beacon: list) {
-            double distance = Math.pow(10, (beacon.getMeasuredPower() - beacon.getRssi()) / 20.0);
-            distance = Math.round(distance * 10) / 10.0; // Round to 1 decimal
-            beaconsList.add(Tools.getBeaconName(beacon.getMajor()) + " RSSI: "+ beacon.getRssi() + " Power: " + beacon.getMeasuredPower() + " Distance: " + distance);
-        }
-
-        return beaconsList;
-    }
 
     public static double[][] getAddResults(double[][] currentValues, List<Beacon> list){
 

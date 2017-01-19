@@ -112,15 +112,35 @@
 
         </LinearLayout>
 
-        <Button
-            android:text="@string/start"
-            android:layout_width="match_parent"
+        <LinearLayout
             android:layout_height="wrap_content"
-            android:background="@color/highligth"
-            android:textColor="@color/white"
-            android:id="@+id/btn_start_stop_find_location"
-            android:layout_marginTop="24dp" />
+            android:layout_width="match_parent"
+            android:layout_marginTop="18dp"
+            android:orientation="horizontal">
 
+                <Button
+                    android:text="@string/reset"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/highligth"
+                    android:textColor="@color/white"
+                    android:layout_marginRight="3dp"
+                    android:id="@+id/btn_reset"
+                    android:layout_weight="50"
+                    tools:ignore="ButtonStyle,RtlHardcoded" />
+
+                <Button
+                    android:text="@string/start"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/highligth"
+                    android:textColor="@color/white"
+                    android:layout_weight="50"
+                    android:layout_marginLeft="3dp"
+                    android:id="@+id/btn_start_stop_find_location"
+                    tools:ignore="ButtonStyle,RtlHardcoded" />
+
+        </LinearLayout>
         <LinearLayout
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
@@ -148,7 +168,6 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:layout_marginTop="18dp"
-
             android:id="@+id/room_layout">
 
             <TextView

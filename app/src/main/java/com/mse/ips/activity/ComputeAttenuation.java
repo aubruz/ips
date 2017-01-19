@@ -1,6 +1,5 @@
 package com.mse.ips.activity;
 
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -9,12 +8,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
@@ -76,41 +73,37 @@ public class ComputeAttenuation extends AppCompatActivity {
         // Beacon Manager
         beaconManager = new BeaconManager(this);
         beaconManager.setBackgroundScanPeriod(5000,5000);
-        beaconManager.setRangingListener(new BeaconManager.RangingListener() {
-            @Override
-            public void onBeaconsDiscovered(Region region, List<Beacon> list) {
-                if (!list.isEmpty() && isProcessing) {
-                    mCountText.setText(String.valueOf(10 - mCount));
-                    resultsTmp = Tools.getAddResults(resultsTmp, list);
+        beaconManager.setRangingListener((region, list) -> {
+            if (!list.isEmpty() && isProcessing) {
+                mCountText.setText(String.valueOf(10 - mCount));
+                resultsTmp = Tools.getAddResults(resultsTmp, list);
 
-                    mCount++;
-                    //Toast.makeText(getApplicationContext(), "Current Value: " + String.valueOf(currentValue) + "Contains? " +  mResults.containsKey(String.valueOf(currentValue)), Toast.LENGTH_SHORT).show();
-                    if(mCount -1 >= SAMPLE_NUMBER && !mResults.containsKey(oneDecimalFormatter.format(currentValue))){
-                        isProcessing = false;
-                        mCount = 0;
-                        mCountText.setText("");
+                mCount++;
+                if(mCount -1 >= SAMPLE_NUMBER && !mResults.containsKey(oneDecimalFormatter.format(currentValue))){
+                    isProcessing = false;
+                    mCount = 0;
+                    mCountText.setText("");
 
-                        // Compute average
-                        for(int i =0; i < resultsTmp.length; i++ ){
-                            resultsTmp[i][1] /= (double)SAMPLE_NUMBER;
-                        }
+                    // Compute average
+                    for(int i =0; i < resultsTmp.length; i++ ){
+                        resultsTmp[i][1] /= (double)SAMPLE_NUMBER;
+                    }
 
-                        // Store values
-                        mResults.put(oneDecimalFormatter.format(currentValue), resultsTmp);
+                    // Store values
+                    mResults.put(oneDecimalFormatter.format(currentValue), resultsTmp);
 
-                        // Next value
-                        currentValue = Tools.getNextValue(currentValue);
+                    // Next value
+                    currentValue = Tools.getNextValue(currentValue);
 
-                        if(currentValue == -1){
-                            showPopup("Fin de l'analyse.");
-                            saveResults(mResults);
-                            endAnalytics();
-                        }else{
-                            resultsTmp = Tools.initialize(new double[6][3]);
-                            mInstructionText.setText("Veuillez placer les beacons à " + oneDecimalFormatter.format(currentValue) + "m du natel");
-                            mButtonStart.setEnabled(true);
-                            mButtonStop.setEnabled(true);
-                        }
+                    if(currentValue == -1){
+                        showPopup("Fin de l'analyse.");
+                        saveResults(mResults);
+                        endAnalytics();
+                    }else{
+                        resultsTmp = Tools.initialize(new double[6][3]);
+                        mInstructionText.setText("Veuillez placer les beacons à " + oneDecimalFormatter.format(currentValue) + "m du natel");
+                        mButtonStart.setEnabled(true);
+                        mButtonStop.setEnabled(true);
                     }
                 }
             }
@@ -122,38 +115,44 @@ public class ComputeAttenuation extends AppCompatActivity {
         mCountText = (TextView) findViewById(R.id.count_text);
         mButtonStop = (Button) findViewById(R.id.button_stop);
         mButtonStop.setEnabled(false);
-        mButtonStop.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                showPopup("Fin de l'analyse.");
-                saveResults(mResults);
-                endAnalytics();
-            }
+        mButtonStop.setOnClickListener(v -> {
+            showPopup("Fin de l'analyse.");
+            saveResults(mResults);
+            endAnalytics();
         });
+
         mButtonStart = (Button) findViewById(R.id.button_start);
-        mButtonStart.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                if(isAnalysing){
-                    mButtonStart.setEnabled(false);
-                    mButtonStop.setEnabled(false);
-                    isProcessing = true;
-                }else {
-                    startAnalytics();
-                }
+        mButtonStart.setOnClickListener(v -> {
+            if(isAnalysing){
+                mButtonStart.setEnabled(false);
+                mButtonStop.setEnabled(false);
+                isProcessing = true;
+            }else {
+                startAnalytics();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(isAnalysing){
+            beaconManager.connect(() -> beaconManager.startRanging(region));
+        }
+        SystemRequirementsChecker.checkWithDefaultDialogs(this);
+    }
+
+    @Override
+    protected void onPause() {
+        beaconManager.stopRanging(region);
+
+        super.onPause();
     }
 
     private void startAnalytics(){
         isAnalysing = true;
         mButtonStart.setText(R.string.ok);
-        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-            @Override
-            public void onServiceReady() {
-                beaconManager.startRanging(region);
-            }
-        });
+        beaconManager.connect(() -> beaconManager.startRanging(region));
         mInstructionText.setText(R.string.placement_initial);
         currentValue = 1.0;
 
@@ -169,17 +168,7 @@ public class ComputeAttenuation extends AppCompatActivity {
     private int showPopup(String msg){
         AlertDialog.Builder builder = new AlertDialog.Builder(ComputeAttenuation.this);
 
-        builder
-                .setMessage(msg)
-                .setPositiveButton(R.string.ok,  new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        // Yes-code
-                        // Toast.makeText(getApplicationContext(), "Yes " , Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .show();
-
+        builder.setMessage(msg).show();
         return 0;
     }
 
@@ -187,11 +176,9 @@ public class ComputeAttenuation extends AppCompatActivity {
 
         List<String> line = new ArrayList<>();
         double[][] array;
-        //line.addAll(results.keySet());
-
 
         try{
-            File csvFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), " test.csv");
+            File csvFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), " attenuation.csv");
             if(!csvFile.exists()){
                 if(!csvFile.createNewFile()){
                     Toast.makeText(this, R.string.csv_file_not_created, Toast.LENGTH_SHORT).show();
@@ -202,7 +189,7 @@ public class ComputeAttenuation extends AppCompatActivity {
             for (String key : results.keySet()) {
                 array = results.get(key);
                 if(firstLine) {
-                    // Add first line <=> Column title
+                    // First line <=> Column title
                     line.add("");
                     for (double[] anArray : array) {
                         line.add(Tools.getBeaconName((int) anArray[0]));
@@ -227,27 +214,6 @@ public class ComputeAttenuation extends AppCompatActivity {
         }
 
         return true;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(isAnalysing){
-            beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-                @Override
-                public void onServiceReady() {
-                    beaconManager.startRanging(region);
-                }
-            });
-        }
-        SystemRequirementsChecker.checkWithDefaultDialogs(this);
-    }
-
-    @Override
-    protected void onPause() {
-        beaconManager.stopRanging(region);
-
-        super.onPause();
     }
 
     @Override

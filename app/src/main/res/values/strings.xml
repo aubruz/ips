@@ -1,8 +1,12 @@
 <resources>
     <string name="app_name">IPS</string>
     <string name="home_text">Choisissez une action</string>
+    <string name="stop_and_save">Arrêter &amp; sauver les resultats</string>
+    <string name="reset">Reset</string>
     <string name="stop">STOP</string>
     <string name="start">START</string>
+    <string name="ok">OK</string>
+    <string name="begin">Commencer</string>
     <string name="default_room">424</string>
     <string name="default_point_name">1</string>
     <string name="room_label">Salle</string>
@@ -11,6 +15,7 @@
     <string name="btn_label_save_fingerprints">Créer des fingerprints</string>
     <string name="btn_label_show_info">Afficher les ondes</string>
     <string name="btn_label_compute_precision">Calculer la précision</string>
+    <string name="btn_label_compute_attenuation">Calculer l\'attenuation</string>
     <string name="building_spinner_label">Batiment</string>
     <string name="floor_spinner_label">Étage</string>
     <string name="default_floor_id">2059237562</string>
@@ -24,11 +29,8 @@
     <string name="loading_finished">Chargement terminé.</string>
     <string name="average_precision">Précision moyenne</string>
     <string name="standart_deviation">Ecart type</string>
-
-    <string name="hello_world">Puissance de réception des beacons</string>
-    <string name="action_settings">Analytics</string>
-    <string name="ok">OK</string>
     <string name="placement_initial">Veuillez placer les beacons à 1m du natel</string>
     <string name="analyse">Analyser la puissance des signaux reçus</string>
     <string name="csv_file_not_created">Le fichier CSV n\'a pas pu être créé</string>
+    <string name="analyze_signals">Analyser la puissance des signaux reçus</string>
 </resources>
