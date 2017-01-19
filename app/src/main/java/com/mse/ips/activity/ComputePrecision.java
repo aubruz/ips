@@ -1,5 +1,6 @@
 package com.mse.ips.activity;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -11,5 +12,13 @@ public class ComputePrecision extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compute_precision);
+
+        // Menu
+        ActionBar ab = getSupportActionBar();
+        if(ab !=null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+
+
     }
 }

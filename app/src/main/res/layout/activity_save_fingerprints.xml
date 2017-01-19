@@ -24,20 +24,11 @@
 
     </LinearLayout>
 
-    <TextView
-        android:text="@string/point_parameters"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textColor="@color/black"/>
-
-
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="40"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -109,8 +100,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="75"
                 android:id="@+id/building_spinner_label"
-                android:labelFor="@+id/spinnerBuildings"
-                android:layout_marginTop="16dp" />
+                android:labelFor="@+id/spinnerBuildings" />
 
             <Spinner
                 android:id="@+id/spinnerBuildings"
@@ -133,8 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="75"
                 android:id="@+id/floor_spinner_label"
-                android:labelFor="@+id/spinnerFloors"
-                android:layout_marginTop="16dp" />
+                android:labelFor="@+id/spinnerFloors" />
 
             <Spinner
                 android:id="@+id/spinnerFloors"

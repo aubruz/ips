@@ -14,7 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.Switch;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,9 +48,9 @@ public class GetLocationActivity extends AppCompatActivity {
     private TextView mRoomValue = null;
     private TextView mPointNameValue = null;
     private boolean mIsFindingLocation = false;
-    private Switch mSwitchBluetooth = null;
-    private Switch mSwitchWifi = null;
-    private Switch mSwitchMagneticField = null;
+    private CheckBox mSwitchBluetooth = null;
+    private CheckBox mSwitchWifi = null;
+    private CheckBox mSwitchMagneticField = null;
     private List<ScanResult> mLastWifiScanResult = null;
     private List<Beacon> mLastBluetoothScanResult = null;
     private BeaconManager mBeaconManager;
@@ -85,9 +85,9 @@ public class GetLocationActivity extends AppCompatActivity {
         // Widgets
         mRoomValue = (TextView) findViewById(R.id.room_value);
         mPointNameValue = (TextView) findViewById(R.id.point_name_value);
-        mSwitchBluetooth = (Switch) findViewById(R.id.switchBlutetooth);
-        mSwitchWifi = (Switch) findViewById(R.id.switchWifi);
-        mSwitchMagneticField = (Switch) findViewById(R.id.switchMagneticField);
+        mSwitchBluetooth = (CheckBox) findViewById(R.id.switchBlutetooth);
+        mSwitchWifi = (CheckBox) findViewById(R.id.switchWifi);
+        mSwitchMagneticField = (CheckBox) findViewById(R.id.switchMagneticField);
         mStartStopButton = (Button) findViewById(R.id.btn_start_stop_find_location);
         mStartStopButton.setOnClickListener(v -> startStopFindLocation());
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
