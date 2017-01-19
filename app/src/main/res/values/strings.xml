@@ -24,4 +24,11 @@
     <string name="loading_finished">Chargement terminé.</string>
     <string name="average_precision">Précision moyenne</string>
     <string name="standart_deviation">Ecart type</string>
+
+    <string name="hello_world">Puissance de réception des beacons</string>
+    <string name="action_settings">Analytics</string>
+    <string name="ok">OK</string>
+    <string name="placement_initial">Veuillez placer les beacons à 1m du natel</string>
+    <string name="analyse">Analyser la puissance des signaux reçus</string>
+    <string name="csv_file_not_created">Le fichier CSV n\'a pas pu être créé</string>
 </resources>
