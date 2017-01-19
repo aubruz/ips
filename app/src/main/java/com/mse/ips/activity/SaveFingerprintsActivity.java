@@ -36,6 +36,7 @@ import com.mse.ips.R;
 import com.mse.ips.lib.GetBitmapFromUrlTask;
 import com.mse.ips.lib.Point;
 import com.mse.ips.lib.SpinnerItem;
+import com.mse.ips.lib.Tools;
 import com.mse.ips.lib.WifiReceiver;
 import com.mse.ips.listener.OnMapViewClickListener;
 import com.mse.ips.view.MapView;
@@ -594,7 +595,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                     if(mNumberOfFingerprintsTaken >= 10){
                         changeRecordingState();
                         // IF the point name is an integer, we increment it
-                        if(isInteger(mPointName.getText().toString())){
+                        if(Tools.isInteger(mPointName.getText().toString())){
                             int nextValue = Integer.parseInt(mPointName.getText().toString()) + 1;
                             mPointName.setText(String.valueOf(nextValue));
                         }
@@ -609,18 +610,6 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 }
             }
         );
-    }
-
-    public static boolean isInteger(String s) {
-        if(s.isEmpty()) return false;
-        for(int i = 0; i < s.length(); i++) {
-            if(i == 0 && s.charAt(i) == '-') {
-                if(s.length() == 1) return false;
-                else continue;
-            }
-            if(Character.digit(s.charAt(i),10) < 0) return false;
-        }
-        return true;
     }
 
 }
