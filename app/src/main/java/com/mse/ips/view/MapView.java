@@ -165,6 +165,26 @@ public class MapView extends ImageView
         return p;
     }
 
+    public void setPointInvisible(Point pointToChange){
+        for(Point point: mPointsList){
+            if(point.getId() == pointToChange.getId()){
+                point.setInvisible(true);
+                invalidate();
+                return;
+            }
+        }
+    }
+
+    public void setPointVisible(Point pointToChange){
+        for(Point point: mPointsList){
+            if(point.getId() == pointToChange.getId()){
+                point.setInvisible(false);
+                invalidate();
+                return;
+            }
+        }
+    }
+
     public void clearPoints(){
         mPointsList.clear();
         invalidate();
@@ -1012,6 +1032,22 @@ public class MapView extends ImageView
         }
         if (mScrollTop < mBottomBound) {
             mScrollTop = mBottomBound;
+        }
+        invalidate();
+    }
+
+    public void showCurrentPointOnly(Point currentPoint){
+        for(Point point: mPointsList){
+            if(point.getId() != currentPoint.getId()) {
+                point.setInvisible(true);
+            }
+        }
+        invalidate();
+    }
+
+    public void showAllPoints(){
+        for(Point point: mPointsList){
+            point.setInvisible(false);
         }
         invalidate();
     }

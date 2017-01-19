@@ -23,6 +23,7 @@ public class Point
     private float mY;
     private final float mRadius = 25.0f;
     private boolean mIsActive = true;
+    private boolean mIsInvisible = false;
 
     public Point(float x, float y, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop)
     {
@@ -54,6 +55,10 @@ public class Point
 
     public void onDraw(Canvas canvas, float resizeFactorX, float resizeFactorY, int scrollLeft, int scrollTop, Paint textPaint)
     {
+        if(mIsInvisible){
+            return;
+        }
+
         if(mIsActive){
             textPaint.setColor(Color.parseColor("#5cc7c0"));
             canvas.drawCircle(mX * resizeFactorX + scrollLeft, mY * resizeFactorY + scrollTop, mRadius + 10, textPaint);
@@ -128,6 +133,10 @@ public class Point
             e.printStackTrace();
         }
         return point;
+    }
+
+    public void setInvisible(boolean isInvisible){
+        this.mIsInvisible = isInvisible;
     }
 
     @Override

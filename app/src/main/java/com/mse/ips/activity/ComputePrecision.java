@@ -50,6 +50,7 @@ import java.util.UUID;
 
 public class ComputePrecision extends AppCompatActivity {
     private int mIndex = 0;
+    private Point mPredictedPoint = null;
     private Button mStartStopButton = null;
     private TextView mAveragePrecision = null;
     private TextView mStandartDeviation = null;
@@ -140,14 +141,6 @@ public class ComputePrecision extends AppCompatActivity {
 
         // MapView
         mImageView = (MapView) findViewById(R.id.imageView);
-        mGetImageTask = new GetBitmapFromUrlTask();
-        mGetImageTask.addOnBitmapRetrievedListener(bitmap -> {
-            if(bitmap != null) {
-                mImageView.setImageBitmap(bitmap);
-            }else{
-                Toast.makeText(ComputePrecision.this, "Il n'y a pas de plan pour cet étage!", Toast.LENGTH_SHORT).show();
-            }
-        });
         mImageView.addOnMapViewClickedListener(new OnMapViewClickListener()
         {
             @Override
@@ -217,7 +210,13 @@ public class ComputePrecision extends AppCompatActivity {
     private void loadBlueprint(int floorId){
         mGetImageTask = new GetBitmapFromUrlTask();
         mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/"+floorId);
-        mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
+        mGetImageTask.addOnBitmapRetrievedListener(bitmap -> {
+            if(bitmap != null) {
+                mImageView.setImageBitmap(bitmap);
+            }else{
+                Toast.makeText(ComputePrecision.this, "Il n'y a pas de plan pour cet étage!", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         AndroidNetworking.get("http://api.ukonectdev.com/v1/floors/{floor}/points")
                 .addPathParameter("floor", String.valueOf(floorId))
@@ -325,6 +324,7 @@ public class ComputePrecision extends AppCompatActivity {
             Toast.makeText(ComputePrecision.this, "Calcul de la précision" , Toast.LENGTH_SHORT).show();
             mStartStopButton.setText(R.string.stop);
 
+            mImageView.showCurrentPointOnly(mCurrentPosition);
             mCheckboxWifi.setEnabled(false);
             mCheckboxBluetooth.setEnabled(false);
             mCheckboxMagneticField.setEnabled(false);
@@ -340,6 +340,7 @@ public class ComputePrecision extends AppCompatActivity {
                 mSensorManager.unregisterListener(mSensorEventListener, mAccelerometer);
             }
             mImageView.enableClick();
+            mImageView.showAllPoints();
             mCheckboxWifi.setEnabled(true);
             mCheckboxBluetooth.setEnabled(true);
             mCheckboxMagneticField.setEnabled(true);
@@ -497,9 +498,17 @@ public class ComputePrecision extends AppCompatActivity {
                             }
                         }
 
-                        Point predictedPoint = new Point(response.getJSONObject("point"));
+                        if(mPredictedPoint != null && mPredictedPoint.getId() != mCurrentPosition.getId()){
+                            mImageView.setPointInvisible(mPredictedPoint);
+                        }
 
-                        mDistances.add(Tools.distance(mCurrentPosition, predictedPoint, mCurrentFloor, mImageView));
+                        mPredictedPoint = new Point(response.getJSONObject("point"));
+
+                        if(mPredictedPoint.getId() != mCurrentPosition.getId()) {
+                            mImageView.setPointVisible(mPredictedPoint);
+                        }
+
+                        mDistances.add(Tools.distance(mCurrentPosition, mPredictedPoint, mCurrentFloor, mImageView));
 
                         float average = Tools.getAveragePrecision(mDistances);
 

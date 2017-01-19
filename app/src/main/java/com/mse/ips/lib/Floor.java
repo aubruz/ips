@@ -70,6 +70,6 @@ public class Floor {
 
     @Override
     public String toString() {
-        return String.valueOf(this.mId);
+        return String.valueOf(this.mName);
     }
 }
