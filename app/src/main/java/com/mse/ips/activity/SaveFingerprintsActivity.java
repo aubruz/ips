@@ -33,9 +33,10 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
 import com.mse.ips.R;
+import com.mse.ips.lib.Building;
+import com.mse.ips.lib.Floor;
 import com.mse.ips.lib.GetBitmapFromUrlTask;
 import com.mse.ips.lib.Point;
-import com.mse.ips.lib.SpinnerItem;
 import com.mse.ips.lib.Tools;
 import com.mse.ips.lib.WifiReceiver;
 import com.mse.ips.listener.OnMapViewClickListener;
@@ -71,10 +72,10 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     private LinkedList<Point> mLastAddedPoints = null;
     private Spinner mSpinnerFloors = null;
     private Spinner mSpinnerBuildings = null;
-    private ArrayList<SpinnerItem> mFloorsList = null;
-    private ArrayList<SpinnerItem> mBuildingsList = null;
-    private ArrayAdapter<SpinnerItem> mFloorsAdapter = null;
-    private ArrayAdapter<SpinnerItem> mBuildingsAdapter = null;
+    private ArrayList<Floor> mFloorsList = null;
+    private ArrayList<Building> mBuildingsList = null;
+    private ArrayAdapter<Floor> mFloorsAdapter = null;
+    private ArrayAdapter<Building> mBuildingsAdapter = null;
     private float mGravity[] = new float[3];
     private float mMagnetic[] = new float[3];
     private SensorManager mSensorManager = null;
@@ -279,16 +280,17 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     AdapterView.OnItemSelectedListener OnSelectionListener =  new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            SpinnerItem item = (SpinnerItem) parent.getItemAtPosition(position);
             switch (parent.getId()) {
                 case R.id.spinnerBuildings:
+                    Building building = (Building) parent.getItemAtPosition(position);
                     disableEditMode();
-                    getFloorsFromBuildingId(item.getTag());
+                    getFloorsFromBuildingId(building.getId());
                     //Toast.makeText(parent.getContext(), item.getName() + " " + item.getTag(), Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.spinnerFloors:
+                    Floor floor = (Floor) parent.getItemAtPosition(position);
                     disableEditMode();
-                    loadBlueprint(item.getTag());
+                    loadBlueprint(floor.getId());
                     break;
             }
         }
@@ -299,13 +301,13 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         }
     };
 
-    private void loadBlueprint(String floorId){
+    private void loadBlueprint(int floorId){
         mGetImageTask = new GetBitmapFromUrlTask();
         mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/"+floorId);
         mGetImageTask.addOnBitmapRetrievedListener(bitmap -> mImageView.setImageBitmap(bitmap));
 
         AndroidNetworking.get("http://api.ukonectdev.com/v1/floors/{floor}/points")
-            .addPathParameter("floor", floorId)
+            .addPathParameter("floor", String.valueOf(floorId))
             .setPriority(Priority.MEDIUM)
             .build()
             .getAsJSONObject(new JSONObjectRequestListener() {
@@ -340,8 +342,8 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                     mBuildingsList.clear();
                     JSONArray buildings = (JSONArray) response.get("buildings");
                     for (int i = 0; i < buildings.length(); i++) {
-                        JSONObject row = buildings.getJSONObject(i);
-                        mBuildingsList.add(new SpinnerItem(row.getString("name"), row.getString("id")));
+                        JSONObject building = buildings.getJSONObject(i);
+                        mBuildingsList.add(new Building(building));
                     }
                     mBuildingsAdapter.notifyDataSetChanged();
                     Toast.makeText(SaveFingerprintsActivity.this, R.string.loading_finished, Toast.LENGTH_SHORT).show();
@@ -356,9 +358,9 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         });
     }
 
-    private void getFloorsFromBuildingId(String buildingId){
+    private void getFloorsFromBuildingId(int buildingId){
         AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings/{buildingID}/floors")
-            .addPathParameter("buildingID", buildingId)
+            .addPathParameter("buildingID", String.valueOf(buildingId))
             .addHeaders("accept", "application/json")
             .setPriority(Priority.MEDIUM)
             .build()
@@ -370,11 +372,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                         mFloorsList.clear();
                         JSONArray buildings = (JSONArray) response.get("floors");
                         for (int i = 0; i < buildings.length(); i++) {
-                            JSONObject row = buildings.getJSONObject(i);
-                            mFloorsList.add(new SpinnerItem(row.getString("name"), row.getString("id")));
+                            JSONObject floor = buildings.getJSONObject(i);
+                            mFloorsList.add(new Floor(floor));
                         }
                         mFloorsAdapter.notifyDataSetChanged();
-                        loadBlueprint(mFloorsList.get(0).getTag());
+                        loadBlueprint(mFloorsList.get(0).getId());
                     }catch (JSONException e){
                         e.printStackTrace();
                     }
@@ -572,9 +574,9 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
             e.printStackTrace();
         }
 
-        SpinnerItem floor = (SpinnerItem) mSpinnerFloors.getSelectedItem();
+        Floor floor = (Floor) mSpinnerFloors.getSelectedItem();
         AndroidNetworking.post("http://api.ukonectdev.com/v1/floors/{floorID}/fingerprints")
-            .addPathParameter("floorID", floor.getTag())
+            .addPathParameter("floorID", String.valueOf(floor.getId()))
             .addJSONObjectBody(data)
             .addHeaders("accept", "application/json")
             .setPriority(Priority.MEDIUM)

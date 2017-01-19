@@ -10,13 +10,13 @@ public class Floor {
     private float mHeight;
     private float mWidth;
 
-    public Floor(JSONObject building) {
+    public Floor(JSONObject floor) {
         try {
-            this.mId = building.getInt("id");
-            this.mName = building.getString("name");
-            this.mBlueprint = building.getString("blueprint");
-            this.mHeight = (float) building.getDouble("height");
-            this.mWidth = (float) building.getDouble("width");
+            this.mId = floor.getInt("id");
+            this.mName = floor.getString("name");
+            this.mBlueprint = floor.getString("blueprint");
+            this.mHeight = (float) floor.getDouble("height");
+            this.mWidth = (float) floor.getDouble("width");
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -66,5 +66,10 @@ public class Floor {
 
     public void setmHeight(float height) {
         this.mHeight = height;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(this.mId);
     }
 }

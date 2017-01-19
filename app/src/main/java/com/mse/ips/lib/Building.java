@@ -47,4 +47,9 @@ public class Building {
     public void setAddress(String address) {
         this.mAddress = address;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(this.mId);
+    }
 }

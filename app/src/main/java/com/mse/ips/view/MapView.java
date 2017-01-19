@@ -1042,4 +1042,12 @@ public class MapView extends ImageView
     public void enableClick(){
         mClickEnabled = true;
     }
+
+    public int getImageHeight() {
+        return mImageHeight;
+    }
+
+    public int getImageWidth() {
+        return mImageWidth;
+    }
 }
