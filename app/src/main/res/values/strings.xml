@@ -22,4 +22,6 @@
     <string name="cancel">Annuler</string>
     <string name="loading_buildings">Chargement des batiments&#8230;</string>
     <string name="loading_finished">Chargement terminé.</string>
+    <string name="average_precision">Précision moyenne</string>
+    <string name="standart_deviation">Ecart type</string>
 </resources>

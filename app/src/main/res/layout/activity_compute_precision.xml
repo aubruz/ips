@@ -28,7 +28,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_weight="40"
-    android:layout_marginTop="16dp">
+    android:layout_marginTop="14dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,12 +36,6 @@
         android:orientation="vertical"
         android:descendantFocusability="beforeDescendants"
         android:focusableInTouchMode="true" >
-
-        <TextView
-            android:text="@string/btn_label_find_location"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/search_position_text" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,7 +46,6 @@
                 android:text="@string/bluetooth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
                 android:layout_weight="33"
                 android:id="@+id/switchBlutetooth" />
 
@@ -61,7 +54,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="33"
-                android:layout_marginTop="18dp"
                 android:id="@+id/switchWifi"
                 android:checked="true"/>
 
@@ -70,8 +62,53 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="33"
-                android:layout_marginTop="18dp"
                 android:id="@+id/switchMagneticField" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp" >
+
+            <TextView
+                android:text="@string/building_spinner_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="75"
+                android:id="@+id/building_spinner_label"
+                android:labelFor="@+id/spinnerBuildings" />
+
+            <Spinner
+                android:id="@+id/spinnerBuildings"
+                android:layout_width="match_parent"
+                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:layout_weight="25" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp" >
+
+            <TextView
+                android:text="@string/floor_spinner_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="75"
+                android:id="@+id/floor_spinner_label"
+                android:labelFor="@+id/spinnerFloors" />
+
+            <Spinner
+                android:id="@+id/spinnerFloors"
+                android:layout_width="match_parent"
+                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:layout_weight="25" />
 
         </LinearLayout>
 
@@ -92,16 +129,16 @@
             android:id="@+id/point_name_layout">
 
             <TextView
-                android:text="@string/point_name_label"
-                android:layout_width="wrap_content"
+                android:text="@string/average_precision"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="60"
-                android:id="@+id/point_name_text"/>
+                android:id="@+id/label_average_precision"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/point_name_value"
+                android:id="@+id/average_precision"
                 android:layout_weight="40"
                 tools:ignore="RelativeOverlap,RtlHardcoded" />
 
@@ -115,16 +152,16 @@
             android:id="@+id/room_layout">
 
             <TextView
-                android:text="@string/room_label"
-                android:layout_width="wrap_content"
+                android:text="@string/standart_deviation"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="60"
-                android:id="@+id/room_label"/>
+                android:id="@+id/label_standart_deviation"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/room_value"
+                android:id="@+id/standart_deviation"
                 android:layout_weight="40"
                 tools:ignore="RelativeOverlap,RtlHardcoded" />
 

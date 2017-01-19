@@ -65,11 +65,11 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     private CheckBox mSwitchBluetooth = null;
     private CheckBox mSwitchWifi = null;
     private CheckBox mSwitchMagneticField = null;
-    private Spinner mSpinnerFloors = null;
-    private Spinner mSpinnerBuildings = null;
     private List<ScanResult> mLastWifiScanResult = null;
     private List<Beacon> mLastBluetoothScanResult = null;
     private LinkedList<Point> mLastAddedPoints = null;
+    private Spinner mSpinnerFloors = null;
+    private Spinner mSpinnerBuildings = null;
     private ArrayList<SpinnerItem> mFloorsList = null;
     private ArrayList<SpinnerItem> mBuildingsList = null;
     private ArrayAdapter<SpinnerItem> mFloorsAdapter = null;

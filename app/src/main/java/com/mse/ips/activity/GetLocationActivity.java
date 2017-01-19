@@ -63,7 +63,7 @@ public class GetLocationActivity extends AppCompatActivity {
     private SensorManager mSensorManager = null;
     private Sensor mMagneticField = null;
     private Sensor mAccelerometer = null;
-    private float [] mNewBasis = new float[3];;
+    private float [] mNewBasis = new float[3];
     private Building mCurrentBuilding = null;
     private Floor mCurrentFloor = null;
     private Point mCurrentPoint  = null;
