@@ -290,6 +290,7 @@ public class ComputePrecision extends AppCompatActivity {
                          }
                          mFloorsAdapter.notifyDataSetChanged();
                          loadBlueprint(mFloorsList.get(0).getId());
+                         mCurrentFloor = mFloorsList.get(0);
                      }catch (JSONException e){
                          e.printStackTrace();
                      }
