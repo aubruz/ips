@@ -2,5 +2,6 @@
 <resources>
     <item name="refresh" type="id"/>
     <item name="add_point" type="id"/>
+    <item name="remove_point" type="id"/>
     <item name="cancel" type="id"/>
 </resources>

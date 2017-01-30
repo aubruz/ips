@@ -8,7 +8,14 @@
         android:icon="@drawable/ic_add_point"
         android:showAsAction="ifRoom"
         tools:ignore="AppCompatResource"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
+    <item android:id="@id/remove_point"
+        android:title="@string/remove_points"
+        android:icon="@drawable/ic_remove_point_inactive"
+        android:showAsAction="ifRoom"
+        tools:ignore="AppCompatResource"
+        app:showAsAction="always" />
 
     <item android:id="@id/cancel"
         android:title="@string/cancel"

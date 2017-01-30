@@ -24,6 +24,7 @@
     <string name="magnetic_field">Champ magnétique</string>
     <string name="refresh">Recharger les données</string>
     <string name="add_points">Ajouter des points</string>
+    <string name="remove_points">Supprimer un point</string>
     <string name="cancel">Annuler</string>
     <string name="loading_buildings">Chargement des batiments&#8230;</string>
     <string name="loading_finished">Chargement terminé.</string>

@@ -223,7 +223,7 @@ public class ShowInfoActivity extends AppCompatActivity{
         if (!list.isEmpty() && mIsReccording && mRadioBtnBluetooth.isChecked()) {
 
             for (Beacon result : list) {
-                String str = result.getRssi() + " " + result.getMajor() + " dBM " + result.getMinor() + "\n";
+                String str = "Major: " + result.getMajor() + "\tMinor :" + result.getMinor() + "\t" + result.getRssi() + " dBm\n";
                 results.append(str);
             }
         }
@@ -236,7 +236,7 @@ public class ShowInfoActivity extends AppCompatActivity{
 
         if(mIsReccording && mRadioBtnWifi.isChecked()) {
             for (ScanResult result : scanResults) {
-                String str = result.SSID + " " + result.level + " dBM " + result.BSSID + "\n";
+                String str = result.SSID  + "\t" + result.BSSID + "\t" + result.level + " dBm\n";
                 results.append(str);
             }
         }

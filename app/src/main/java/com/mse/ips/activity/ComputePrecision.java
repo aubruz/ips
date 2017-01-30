@@ -521,9 +521,9 @@ public class ComputePrecision extends AppCompatActivity {
 
                         float average = Tools.getAveragePrecision(mDistances);
 
-                        mAveragePrecision.setText(String.valueOf(average));
+                        mAveragePrecision.setText(String.format("%.2f",average));
 
-                        mStandartDeviation.setText(String.valueOf(Tools.getStandartDeviation(mDistances, average)));
+                        mStandartDeviation.setText(String.format("%.2f", Tools.getStandartDeviation(mDistances, average)));
                         
                     }catch(JSONException e){
                         e.printStackTrace();
