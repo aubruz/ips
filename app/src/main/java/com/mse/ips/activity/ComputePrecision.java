@@ -46,6 +46,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public class ComputePrecision extends AppCompatActivity {
@@ -521,9 +522,9 @@ public class ComputePrecision extends AppCompatActivity {
 
                         float average = Tools.getAveragePrecision(mDistances);
 
-                        mAveragePrecision.setText(String.format("%.2f",average));
+                        mAveragePrecision.setText(String.format(Locale.FRENCH, "%.2f",average));
 
-                        mStandartDeviation.setText(String.format("%.2f", Tools.getStandartDeviation(mDistances, average)));
+                        mStandartDeviation.setText(String.format(Locale.FRENCH, "%.2f", Tools.getStandartDeviation(mDistances, average)));
                         
                     }catch(JSONException e){
                         e.printStackTrace();
