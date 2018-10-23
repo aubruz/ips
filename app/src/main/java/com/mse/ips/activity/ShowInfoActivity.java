@@ -60,19 +60,19 @@ public class ShowInfoActivity extends AppCompatActivity{
         }
 
         //Widgets
-        mScanResults = (TextView) findViewById(R.id.text_scan_results);
-        mRadioBtnWifi = (RadioButton) findViewById(R.id.radio_wifi);
-        mRadioBtnMagnetic = (RadioButton) findViewById(R.id.radio_magnetic);
-        mRadioBtnBluetooth = (RadioButton) findViewById(R.id.radio_bluetooth);
-        mTechnologies = (RadioGroup) findViewById(R.id.radio_group_technology);
-        mButton = (Button) findViewById(R.id.button);
+        mScanResults = findViewById(R.id.text_scan_results);
+        mRadioBtnWifi = findViewById(R.id.radio_wifi);
+        mRadioBtnMagnetic = findViewById(R.id.radio_magnetic);
+        mRadioBtnBluetooth = findViewById(R.id.radio_bluetooth);
+        mTechnologies = findViewById(R.id.radio_group_technology);
+        mButton = findViewById(R.id.button);
         mButton.setOnClickListener(v -> changeRecordingState());
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 
         // Wifi initialization
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mReceiverWifi = new WifiReceiver(mWifiManager);
         mReceiverWifi.addOnReceiveWifiScanResult(this::showWifiScanResults);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -209,7 +209,7 @@ public class ShowInfoActivity extends AppCompatActivity{
     }
 
     private void scanWifi(){
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (mReceiverWifi == null) {
             mReceiverWifi = new WifiReceiver(mWifiManager);
         }

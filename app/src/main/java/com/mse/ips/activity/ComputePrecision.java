@@ -96,20 +96,20 @@ public class ComputePrecision extends AppCompatActivity {
         }
 
         // Widgets
-        mAveragePrecision = (TextView) findViewById(R.id.average_precision);
-        mStandartDeviation = (TextView) findViewById(R.id.standart_deviation);
-        mCheckboxBluetooth = (CheckBox) findViewById(R.id.switchBlutetooth);
-        mCheckboxWifi = (CheckBox) findViewById(R.id.switchWifi);
-        mCheckboxMagneticField = (CheckBox) findViewById(R.id.switchMagneticField);
-        mStartStopButton = (Button) findViewById(R.id.btn_start_stop_find_location);
-        mResetButton = (Button) findViewById(R.id.btn_reset);
+        mAveragePrecision = findViewById(R.id.average_precision);
+        mStandartDeviation = findViewById(R.id.standart_deviation);
+        mCheckboxBluetooth = findViewById(R.id.switchBlutetooth);
+        mCheckboxWifi = findViewById(R.id.switchWifi);
+        mCheckboxMagneticField = findViewById(R.id.switchMagneticField);
+        mStartStopButton = findViewById(R.id.btn_start_stop_find_location);
+        mResetButton = findViewById(R.id.btn_reset);
         mStartStopButton.setOnClickListener(v -> startStopFindLocation());
         mResetButton.setOnClickListener(v -> resetData());
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        mSpinnerFloors = (Spinner) findViewById(R.id.spinnerFloors);
-        mSpinnerBuildings = (Spinner) findViewById(R.id.spinnerBuildings);
+        mSpinnerFloors = findViewById(R.id.spinnerFloors);
+        mSpinnerBuildings = findViewById(R.id.spinnerBuildings);
 
         // Spinners
         mBuildingsList = new ArrayList<>();
@@ -133,7 +133,7 @@ public class ComputePrecision extends AppCompatActivity {
         mRegion = new Region("Ranged region", UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"), null, null);
 
         // Initialization of Wifi
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mReceiverWifi = new WifiReceiver(mWifiManager);
         mReceiverWifi.addOnReceiveWifiScanResult(this::sendWifiResults);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -143,7 +143,7 @@ public class ComputePrecision extends AppCompatActivity {
         }
 
         // MapView
-        mImageView = (MapView) findViewById(R.id.imageView);
+        mImageView = findViewById(R.id.imageView);
         mImageView.addOnMapViewClickedListener(new OnMapViewClickListener()
         {
             @Override
@@ -372,7 +372,7 @@ public class ComputePrecision extends AppCompatActivity {
     }
 
     private void find(){
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (mReceiverWifi == null) {
             mReceiverWifi = new WifiReceiver(mWifiManager);
         }

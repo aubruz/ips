@@ -103,14 +103,14 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         mLastAddedPoints = new LinkedList<>();
 
         // Widgets
-        mButton = (Button) findViewById(R.id.button);
-        mRoom = (EditText) findViewById(R.id.room);
-        mPointName = (EditText) findViewById(R.id.point_name);
-        mSwitchBluetooth = (CheckBox) findViewById(R.id.switchBlutetooth);
-        mSwitchWifi = (CheckBox) findViewById(R.id.switchWifi);
-        mSwitchMagneticField = (CheckBox) findViewById(R.id.switchMagneticField);
-        mSpinnerFloors = (Spinner) findViewById(R.id.spinnerFloors);
-        mSpinnerBuildings = (Spinner) findViewById(R.id.spinnerBuildings);
+        mButton = findViewById(R.id.button);
+        mRoom = findViewById(R.id.room);
+        mPointName = findViewById(R.id.point_name);
+        mSwitchBluetooth = findViewById(R.id.switchBlutetooth);
+        mSwitchWifi = findViewById(R.id.switchWifi);
+        mSwitchMagneticField = findViewById(R.id.switchMagneticField);
+        mSpinnerFloors = findViewById(R.id.spinnerFloors);
+        mSpinnerBuildings =  findViewById(R.id.spinnerBuildings);
         mButton.setOnClickListener(v -> changeRecordingState());
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -132,7 +132,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         getBuildings();
 
         // Wifi initialization
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mReceiverWifi = new WifiReceiver(mWifiManager);
         mReceiverWifi.addOnReceiveWifiScanResult(this::saveWifiScanResult);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -149,7 +149,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         mRegion = new Region("Ranged region", UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"), null, null);
 
         // MapView
-        mImageView = (MapView) findViewById(R.id.imageView);
+        mImageView = findViewById(R.id.imageView);
         mGetImageTask = new GetBitmapFromUrlTask();
         mGetImageTask.execute("https://ukonect-dev.s3.amazonaws.com/blueprints/43284381");
         mGetImageTask.addOnBitmapRetrievedListener(bitmap -> {
@@ -461,7 +461,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     }
 
     private void scanWifi(){
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (mReceiverWifi == null) {
             mReceiverWifi = new WifiReceiver(mWifiManager);
         }
