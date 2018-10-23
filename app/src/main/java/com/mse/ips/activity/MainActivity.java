@@ -15,18 +15,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Buttons
-        Button mBtnSaveFingerprints = (Button) findViewById(R.id.btn_save_fingerprints);
-        Button mBtnGetMyLocation = (Button) findViewById(R.id.btn_find_location);
-        Button mBtnShowInfo = (Button) findViewById(R.id.btn_show_info);
-        Button mBtnComputePrecision = (Button) findViewById(R.id.btn_compute_precision);
-        Button mBtnComputeAttenuation = (Button) findViewById(R.id.btn_compute_attenuation);
+        Button mBtnSaveFingerprints = findViewById(R.id.btn_save_fingerprints);
+        Button mBtnGetMyLocation = findViewById(R.id.btn_find_location);
+        Button mBtnShowInfo = findViewById(R.id.btn_show_info);
+        Button mBtnComputePrecision = findViewById(R.id.btn_compute_precision);
 
         // On click
         mBtnSaveFingerprints.setOnClickListener(v -> goToSaveFingerprintsActivity());
         mBtnGetMyLocation.setOnClickListener(v -> goToFindLocationActivity());
         mBtnShowInfo.setOnClickListener(v -> goToShowInfoActivity());
         mBtnComputePrecision.setOnClickListener(v -> goToComputePrecisionActivity());
-        mBtnComputeAttenuation.setOnClickListener(v -> goToComputeAttenuationActivity());
     }
 
     private void goToSaveFingerprintsActivity(){
@@ -46,11 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void goToComputePrecisionActivity(){
         Intent intent = new Intent(MainActivity.this, ComputePrecision.class);
-        startActivity(intent);
-    }
-
-    private void goToComputeAttenuationActivity(){
-        Intent intent = new Intent(MainActivity.this, ComputeAttenuation.class);
         startActivity(intent);
     }
 
