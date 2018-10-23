@@ -1,18 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 26
     buildToolsVersion "24.0.3"
     defaultConfig {
         applicationId 'com.mse.ips'
         minSdkVersion 22
-        targetSdkVersion 22
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        jackOptions {
-            enabled true
-        }
     }
     buildTypes {
         release {
@@ -39,5 +36,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
     compile 'com.amitshekhar.android:android-networking:0.3.0'
-    compile 'com.estimote:sdk:0.9.4@aar'
+    compile 'com.estimote:sdk:0.13.0@aar'
 }
