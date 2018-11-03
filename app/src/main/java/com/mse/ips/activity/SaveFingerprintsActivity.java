@@ -132,7 +132,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
         getBuildings();
 
         // Wifi initialization
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mReceiverWifi = new WifiReceiver(mWifiManager);
         mReceiverWifi.addOnReceiveWifiScanResult(this::saveWifiScanResult);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -330,7 +330,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
 
     private void getBuildings(){
         Toast.makeText(this, R.string.loading_buildings, Toast.LENGTH_SHORT).show();
-        AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings")
+        AndroidNetworking.get("http://128.0.0.1:8000/api/buildings")
             .addHeaders("accept", "application/json")
         .setPriority(Priority.MEDIUM)
         .build()
@@ -340,7 +340,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
                 //Toast.makeText(SaveFingerprintsActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
                 try{
                     mBuildingsList.clear();
-                    JSONArray buildings = (JSONArray) response.get("buildings");
+                    JSONArray buildings = (JSONArray) response.get("data");
                     for (int i = 0; i < buildings.length(); i++) {
                         JSONObject building = buildings.getJSONObject(i);
                         mBuildingsList.add(new Building(building));
@@ -359,7 +359,7 @@ public class SaveFingerprintsActivity extends AppCompatActivity{
     }
 
     private void getFloorsFromBuildingId(int buildingId){
-        AndroidNetworking.get("http://api.ukonectdev.com/v1/buildings/{buildingID}/floors")
+        AndroidNetworking.get("http://127.0.0.1:8000/api/buildings/{buildingID}/floors")
             .addPathParameter("buildingID", String.valueOf(buildingId))
             .addHeaders("accept", "application/json")
             .setPriority(Priority.MEDIUM)
