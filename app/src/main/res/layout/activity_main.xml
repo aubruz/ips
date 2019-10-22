@@ -54,13 +54,4 @@
         android:id="@+id/btn_compute_precision"
         android:layout_marginTop="20dp" />
 
-    <Button
-        android:text="@string/btn_label_compute_attenuation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/highligth"
-        android:textColor="@color/white"
-        android:id="@+id/btn_compute_attenuation"
-        android:layout_marginTop="20dp" />
-
 </LinearLayout>
