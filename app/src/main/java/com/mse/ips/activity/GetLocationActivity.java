@@ -102,7 +102,7 @@ public class GetLocationActivity extends AppCompatActivity {
         mRegion = new Region("Ranged region", UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"), null, null);
 
         // Initialization of Wifi
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mReceiverWifi = new WifiReceiver(mWifiManager);
         mReceiverWifi.addOnReceiveWifiScanResult(this::sendWifiResults);
         registerReceiver(mReceiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -210,7 +210,7 @@ public class GetLocationActivity extends AppCompatActivity {
     }
 
     private void find(){
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (mReceiverWifi == null) {
             mReceiverWifi = new WifiReceiver(mWifiManager);
         }
